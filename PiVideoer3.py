@@ -44,7 +44,7 @@ import ephem
 import datetime
 
 # Version
-version = "0.01"
+version = "0.02"
 
 # set video parameters
 vid_width    = 1920
@@ -2462,17 +2462,18 @@ while True:
                             pygame.display.update()
 
                 elif g == 2 and menu == 4 and show == 1 and (frames > 0):
+                    #Show Video
                     vids = glob.glob(h_user + '/Videos/2*.h264')
                     vids.sort()
                     jpgs = Jpegs[q].split("/")
                     jp = jpgs[4][:-4]
+                    stop = 0
                     for x in range(len(vids)-1,0,-1):
                         vide = vids[x].split("/")
                         vid = vide[4][:-5]
-                        stop = 0
                         if vid < jp and stop == 0:
-                          os.system("vlc " + h_user + '/Videos/' + vid + '.h264')
-                          stop == 1
+                            os.system("vlc " + h_user + '/Videos/' + vid + '.h264')
+                            stop == 1
                             
 
                 elif g == 3 and menu == 4:
@@ -3556,7 +3557,7 @@ while True:
                         text(0,7,3,0,1,"DELETE",14,7)
                         text(0,7,3,1,1,"ALL VIDS  ",14,7)
                         text(0,8,2,0,1,"SHOW ALL",14,7)
-                        text(0,8,2,1,1,"Videos",14,7)
+                        text(0,8,2,1,1,"Stills",14,7)
                         text(0,9,2,0,1,"MAKE FULL",14,7)
                         text(0,9,2,1,1,"MP4",14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
