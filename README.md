@@ -10,7 +10,7 @@ The waveshare imx290-83 IR filter can be switched (camera 1 connected to gpio26,
 
 Set your location and hours difference to utc time.
 
-On a Pi5 allows switching of 2 cameras based on sunrise/sunset or set times.
+On a Pi5 allows switching of 2 cameras based on sunrise/sunset or set times. The idea is to put a normal camera on cam0 and a Noir camera on cam1.
 
 It will capture videos at 25fps at 1920 x 1080, or on a GS camera 1456 x 1088.
 
