@@ -58,7 +58,7 @@ somewhere = ephem.Observer()
 somewhere.lat = '51.49340' # set your location latitude
 somewhere.lon = '00.00980' # set your location longtitude
 somewhere.elevation = 100  # set your location height
-UTC_offset = 1             # set your local time offset to UTC
+UTC_offset = 0             # set your local time offset to UTC
 
 # set screen size
 scr_width  = 800
