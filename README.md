@@ -6,11 +6,13 @@ Uses Raspberry OS BULLSEYE or BOOKWORM (for BOOKWORM switch to X11 not Wayland) 
 
 for arducam cameras follow their installation instructions eg. https://docs.arducam.com/Raspberry-Pi-Camera/Native-camera/64MP-Hawkeye/
 
-The waveshare imx290-83 IR filter can be switched (camera 1 connected to gpio26,pin37, camera2 connected to gpio19,pin35) based on sunrise/sunset or set times. IR light can be controlled by gpio13,pin33 (interface required). Set your location and hours difference to utc time.
+The waveshare imx290-83 IR filter can be switched (camera 1 connected to gpio26,pin37, camera2 connected to gpio19,pin35) based on sunrise/sunset or set times. IR light can be controlled by gpio13,pin33 (interface required). 
+
+Set your location and hours difference to utc time.
 
 On a Pi5 allows switching of 2 cameras based on sunrise/sunset or set times.
 
-It will capture videos at 25fps at 1280 x 720, or on a GS camera 1456 x 1088.
+It will capture videos at 25fps at 1920 x 1080, or on a GS camera 1456 x 1088.
 
 Pi v3, Arducam HAWKEYE, OWLSIGHT or 16MP cameras can be auto / manually focussed. Pi v3 also can do spot focus.
 
