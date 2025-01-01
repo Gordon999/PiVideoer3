@@ -2473,7 +2473,7 @@ while True:
                         vid = vide[4][:-5]
                         if vid < jp and stop == 0:
                             os.system("vlc " + h_user + '/Videos/' + vid + '.h264')
-                            stop == 1
+                            stop = 1
                             
 
                 elif g == 3 and menu == 4:
