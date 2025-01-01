@@ -8,7 +8,7 @@ for arducam cameras follow their installation instructions eg. https://docs.ardu
 
 The waveshare imx290-83 IR filter can be switched (camera 1 connected to gpio26,pin37, camera2 connected to gpio19,pin35) based on sunrise/sunset or set times. IR light can be controlled by gpio13,pin33 (interface required). Set your location and hours difference to utc time.
 
-On a Pi5 allows switching of cameras based on sunrise/sunset or set times.
+On a Pi5 allows switching of 2 cameras based on sunrise/sunset or set times.
 
 It will capture videos at 25fps at 1280 x 720, or on a GS camera 1456 x 1088.
 
@@ -19,3 +19,18 @@ Makes individual h264s, and can make a FULL MP4 of h264s stored.
 Can control focus on a pi v3camera, auto, continuous,  manual or spot. For spot click on image when in menu showing focus options.
 
 h264s captured in /home/《user》/Videos. can be converted to a mp4.
+
+To install:
+
+Install latest FULL RaspiOS based on Bullseye or Bookworm (tested with FULL 32bit and 64bit versions)
+
+if using BOOKWORM switch to X11. sudo raspi-config, choose advanced , choose 6A X11 option, reboot.
+
+sudo apt install python3-opencv
+
+sudo pip3 install ephem --break-system-packages (or use venv!!)
+
+Download PiVideoer3.py and copy to /home/《user》
+
+Note buttons with RED text use right mouse click, others left click. Click on left or right part of button as appropriate.
+
