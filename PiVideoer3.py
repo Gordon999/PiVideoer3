@@ -1692,7 +1692,10 @@ while True:
                     # RECORD
                     record = 1
                     button(0,1,1)
-                    text(0,1,3,0,1,"RECORD",16,0)                    
+                    text(0,1,3,0,1,"RECORD",16,0)
+                    time.sleep(0.5)
+                    button(0,1,3)
+                    text(0,1,6,0,1,"RECORD",16,3)
 
                 elif g == 10 and menu == -1 and event.button == 3:
                     # EXIT
@@ -2501,11 +2504,11 @@ while True:
                         text(0,4,3,1,1,"No",14,7)
                         
                 elif g == 5 and menu == 4:
-                    #move MP4 to usb
+                    #move h264s to usb
                     menu_timer  = time.monotonic()
                     if os.path.exists('mylist.txt'):
                         os.remove('mylist.txt')
-                    Mideos = glob.glob(h_user + '/Videos/*.mp4')
+                    Mideos = glob.glob(h_user + '/Videos/*.h264')
                     Jpegs = glob.glob(h_user + '/Videos/*.jpg')
                     USB_Files  = []
                     USB_Files  = (os.listdir(m_user))
@@ -2514,8 +2517,8 @@ while True:
                         if not os.path.exists(m_user + "/'" + USB_Files[0] + "'/Videos/") :
                             os.system('mkdir ' + m_user + "/'" + USB_Files[0] + "'/Videos/")
                         text(0,5,3,0,1,"MOVING",14,7)
-                        text(0,5,3,1,1,"MP4s",14,7)
-                        Videos = glob.glob(h_user + '/Videos/*.mp4')
+                        text(0,5,3,1,1,"h264s",14,7)
+                        Videos = glob.glob(h_user + '/Videos/*.h264')
                         Videos.sort()
                         for xx in range(0,len(Videos)):
                             movi = Videos[xx].split("/")
@@ -2532,12 +2535,12 @@ while True:
                                 else:
                                     if os.path.exists(Videos[xx][:-4] + ".jpg"):
                                         os.remove(Videos[xx][:-4] + ".jpg")
-                        Videos = glob.glob(h_user + '/Videos/*.mp4')
+                        Videos = glob.glob(h_user + '/Videos/*.h264')
                         Jpegs = glob.glob(h_user + '/Videos/*.jpg')
                         for xx in range(0,len(Jpegs)):
                             os.remove(Jpegs[xx])
                         frames = len(Videos)
-                        text(0,5,0,0,1,"MOVE MP4s",14,7)
+                        text(0,5,0,0,1,"MOVE h264s",14,7)
                         text(0,5,0,1,1,"to USB",14,7)
                     pause_thread = False
                     main_menu()
@@ -3547,10 +3550,10 @@ while True:
                         else:
                             text(0,4,3,1,1,"Yes",14,7)
                         if frames > 0:
-                            text(0,5,2,0,1,"MOVE MP4s",14,7)
+                            text(0,5,2,0,1,"MOVE h264s",14,7)
                             text(0,5,2,1,1,"to USB",14,7)
                         else:
-                            text(0,5,0,0,1,"MOVE MP4s",14,7)
+                            text(0,5,0,0,1,"MOVE h264s",14,7)
                             text(0,5,0,1,1,"to USB",14,7)
                         text(0,6,3,0,1,"DELETE ",14,7)
                         text(0,6,3,1,1,"STILL ",14,7)
