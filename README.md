@@ -20,7 +20,7 @@ Makes individual h264s, and can make a FULL MP4 of h264s stored.
 
 Can control focus on a pi v3camera, auto, continuous,  manual or spot. For spot click on image when in menu showing focus options.
 
-h264s captured in /home/《user》/Videos. can be converted to a mp4.
+h264s and jpegs captured in /home/《user》/Videos.  h264s can be converted to a mp4.
 
 To install:
 
