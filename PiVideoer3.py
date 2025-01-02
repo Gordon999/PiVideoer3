@@ -44,7 +44,7 @@ import ephem
 import datetime
 
 # Version
-version = "0.04"
+version = "0.05"
 
 # set video parameters
 vid_width    = 1920
@@ -115,7 +115,7 @@ nr            = 2       # Noise reduction, 0 off, 1 low, 2 high *
 dspeed        = 100     # detection speed 1-100, 1 = slowest *
 mp4_fps       = 25      # set MP4 fps *
 mp4_anno      = 1       # mp4_annotate MP4s with date and time , 1 = yes, 0 = no *
-SD_F_Act      = 0       # Action on SD FULL, 0 = STOP, 1 = DELETE OLDEST VIDEO, 2 = COPY TO USB (if fitted) *
+SD_F_Act      = 1       # Action on SD FULL, 0 = STOP, 1 = DELETE OLDEST VIDEO, 2 = COPY TO USB (if fitted) *
 interval      = 0       # seconds of wait between capturing Pictures / TIMELAPSE (set threshold to 0)*
 v_length      = 300000  # video length in mS *
 # setup for 1st camera
@@ -1435,7 +1435,6 @@ while True:
                     free = (os.statvfs('/'))
                     SD_storage = ((1 - (free.f_bavail / free.f_blocks)) * 100)
                     ss = str(int(SD_storage)) + "%"
-                    print(SD_storage)
                     record = 0
                     if menu == -1:
                         text(0,1,6,1,1,ss,12,3)
@@ -1451,8 +1450,8 @@ while True:
                     if SD_storage > SD_limit and len(USB_Files) > 0 and SD_F_Act == 2 and USB_storage < 90:
                         if trace > 0:
                             print ("Step 12 USED SD CARD > LIMIT")
-                        if not os.path.exists(m_user + "/'" + USB_Files[0] + "'/Videos/") :
-                            os.system('mkdir ' + m_user + "/'" + USB_Files[0] + "'/Videos/")
+                        if not os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/") :
+                            os.system('mkdir ' + m_user + "/" + USB_Files[0] + "/Videos/")
                         text(0,0,2,0,1,"CAPTURE",16,0)
                         while SD_storage > SD_limit:
                             Jpegs = glob.glob(vid_dir + '2*.jpg')
@@ -1460,13 +1459,13 @@ while True:
                             if len(Jpegs) > 0:
                                 for q in range(0,len(Jpegs)):
                                     if os.path.getsize(Jpegs[q]) > 0:
-                                        shutil.move(Jpegs[q],m_user + "/'" + USB_Files[0] + "'/Videos/")
+                                        shutil.move(Jpegs[q],m_user + "/" + USB_Files[0] + "/Videos/")
                             Videos = glob.glob(vid_dir + '2???????????.h264')
                             Videos.sort()
                             if len(Videos) > 0:
                                 for q in range(0,len(Videos)):
                                     if os.path.getsize(Videos[q]) > 0:
-                                        shutil.move(Videos[q],m_user + "/'" + USB_Files[0] + "'/Videos/")
+                                        shutil.move(Videos[q],m_user + "/" + USB_Files[0] + "/Videos/")
                             free = (os.statvfs('/'))
                             SD_storage = ((1 - (free.f_bavail / free.f_blocks)) * 100)
                             ss =str(int(SD_storage)) + "%"
