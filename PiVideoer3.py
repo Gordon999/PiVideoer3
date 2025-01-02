@@ -44,7 +44,7 @@ import ephem
 import datetime
 
 # Version
-version = "0.03"
+version = "0.04"
 
 # set video parameters
 vid_width    = 1920
@@ -1432,9 +1432,13 @@ while True:
                         text(0,0,3,1,1,vf,14,7)
                     last = time.monotonic()    
                     #  SD storage space
+                    free = (os.statvfs('/'))
                     SD_storage = ((1 - (free.f_bavail / free.f_blocks)) * 100)
                     ss = str(int(SD_storage)) + "%"
+                    print(SD_storage)
                     record = 0
+                    if menu == -1:
+                        text(0,1,6,1,1,ss,12,3)
                     timer10 = time.monotonic()
                     oldimg = []
                     vidjr = 1
@@ -1484,7 +1488,6 @@ while True:
                             Videos.sort()
                             if os.path.getsize(Videos[q]) > 0:
                                 os.remove(Videos[0])
-                                os.remove(Videos[0][:-4] + ".jpg")
                             frames -=1
                             vf = str(frames)
                          
@@ -2287,11 +2290,11 @@ while True:
                 elif g == 1 and menu == 3:
                     # VIDEO LENGTH
                     if (h == 0 and event.button == 1) or event.button == 5:
-                        v_length -=1000
-                        v_length = max(v_length,1000)
+                        v_length -=60000
+                        v_length = max(v_length,60000)
                     else:
-                        v_length +=1000
-                        v_length = min(v_length,1000000)
+                        v_length +=60000
+                        v_length = min(v_length,6000000)
                     text(0,1,3,1,1,str(v_length/1000),14,7)
                     save_config = 1
                     
