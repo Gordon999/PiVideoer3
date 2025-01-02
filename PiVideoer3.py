@@ -44,7 +44,7 @@ import ephem
 import datetime
 
 # Version
-version = "0.02"
+version = "0.03"
 
 # set video parameters
 vid_width    = 1920
@@ -59,6 +59,13 @@ somewhere.lat = '51.49340' # set your location latitude
 somewhere.lon = '00.00980' # set your location longtitude
 somewhere.elevation = 100  # set your location height
 UTC_offset = 0             # set your local time offset to UTC
+
+# find username
+h_user = "/home/" + os.getlogin( )
+m_user = "/media/" + os.getlogin( )
+
+# set storage directory
+vid_dir = "/home/" + os.getlogin( ) + "/Videos/"
 
 # set screen size
 scr_width  = 800
@@ -613,13 +620,6 @@ fxy = 0
 fxz = 1
 USB_storage = 100
 
-# find username
-h_user = "/home/" + os.getlogin( )
-m_user = "/media/" + os.getlogin( )
-
-vid_dir = "/home/" + os.getlogin( ) + "/Videos/"
-pic_dir = "/home/" + os.getlogin( ) + "/Videos/"
-
 if not os.path.exists(h_user + '/CMask.bmp'):
    pygame.init()
    bredColor =   pygame.Color(100,100,100)
@@ -821,11 +821,9 @@ if len(USB_Files) > 0:
 # read list of existing Video Files
 Videos = []
 frames = 0
-
-# SD card
-Videos = glob.glob(h_user + '/Videos/*.h264')
+Videos = glob.glob(vid_dir + '*.h264')
 Videos.sort()
-Jpegs = glob.glob(h_user + '/Videos/*.jpg')
+Jpegs = glob.glob(vid_dir + '*.jpg')
 Jpegs.sort()
 frames = len(Jpegs)
 vf = str(frames)
@@ -925,7 +923,7 @@ def main_menu():
     for d in range(0,11):
          button(0,d,0)
     button(0,1,3)
-    Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+    Jpegs = glob.glob(vid_dir + '2*.jpg')
     Jpegs.sort()
     frames = len(Jpegs)
     vf = str(frames)
@@ -954,12 +952,8 @@ def main_menu():
     text(0,5,1,1,1,"Settings",14,7)
     text(0,7,1,0,1,"OTHER",14,7)
     text(0,7,1,1,1,"Settings ",14,7)
-    if ((frames > 0) and menu == -1):
-        text(0,6,1,0,1,"SHOW,EDIT or",13,7)
-        text(0,6,1,1,1,"DELETE",13,7)
-    else:
-        text(0,6,0,0,1,"SHOW,EDIT or",13,7)
-        text(0,6,0,1,1,"DELETE",13,7)
+    text(0,6,1,0,1,"SHOW,EDIT or",13,7)
+    text(0,6,1,1,1,"DELETE",13,7)
     if Pi == 5 and cam2 != "2":
         text(0,8,1,0,1,"CAMERA 2",14,7)
         text(0,8,1,1,1,"Settings 1",14,7)
@@ -1219,7 +1213,7 @@ while True:
             save_config = 1
           
         # shutdown if shutdown hour reached and clocked synced
-        if hour > sd_hour - 1 and sd_hour != 0 and time.monotonic() - start_up > 600 and synced == 1 and not encoding:
+        if hour > sd_hour - 1 and sd_hour != 0 and time.monotonic() - start_up > 600 and synced == 1 :
             # EXIT and SHUTDOWN
             if trace > 0:
                  print ("Step 13 TIMED EXIT")
@@ -1232,7 +1226,7 @@ while True:
                 usedusb = os.statvfs(m_user + "/" + USB_Files[0] + "/")
                 USB_storage = ((1 - (usedusb.f_bavail / usedusb.f_blocks)) * 100)
             if len(USB_Files) > 0 and USB_storage < 90:
-                Videos = glob.glob(h_user + '/Videos/*.h264')
+                Videos = glob.glob(vid_dir + '*.h264')
                 Videos.sort()
                 for xx in range(0,len(Videos)):
                     movi = Videos[xx].split("/")
@@ -1381,7 +1375,7 @@ while True:
                     timestamp = now.strftime("%y%m%d%H%M%S")
                     print("New Motion", timestamp)
                     image3 = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-                    cv2.imwrite(pic_dir + timestamp + ".jpg" , image3)
+                    cv2.imwrite(vid_dir + timestamp + ".jpg" , image3)
                     detect = 1
                     if ES > 0 and use_gpio == 1: # trigger external camera
                         led_s_focus.on()
@@ -1394,7 +1388,7 @@ while True:
                     vid = 1
                     fx = 1
                     record = 0
-                    Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+                    Jpegs = glob.glob(vid_dir + '2*.jpg')
                     Jpegs.sort()
                     frames = len(Jpegs)
                     vf = str(frames)
@@ -1406,11 +1400,6 @@ while True:
                         button(0,0,4)
                         text(0,0,6,0,1,"CAPTURE",16,4)
                         text(0,0,3,1,1,vf,14,4)
-                    if menu == -1:
-                        text(0,6,1,0,1,"SHOW,EDIT or",13,7)
-                        text(0,6,1,1,1,"DELETE",13,7)
-
-                  
                 else:
                     if Capture == 1 and menu == -1:
                         text(0,0,3,1,1,str(interval - (int(time.monotonic() - timer10))),15,0)
@@ -1420,7 +1409,6 @@ while True:
             else:
                 #start recording a new video file
                 if encoding == False:
-                    print( "Start Recording..")
                     now = datetime.datetime.now()
                     timestamp = now.strftime("%y%m%d%H%M%S")
                     picam2.start_recording(encoder,vid_dir + timestamp + '.h264')
@@ -1436,7 +1424,7 @@ while True:
                     if ES == 2 and use_gpio == 1:
                         led_s_trig.off()
                         led_s_focus.off()
-                    Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+                    Jpegs = glob.glob(vid_dir + '2*.jpg')
                     Jpegs.sort()
                     frames = len(Jpegs)
                     vf = str(frames)
@@ -1450,13 +1438,6 @@ while True:
                     timer10 = time.monotonic()
                     oldimg = []
                     vidjr = 1
-
-                    if ((frames > 0)  and menu == -1):
-                        text(0,6,1,0,1,"SHOW,EDIT or",13,7)
-                        text(0,6,1,1,1,"DELETE",14,7)
-                    elif menu == -1:
-                        text(0,6,0,0,1,"SHOW,EDIT or",13,7)
-                        text(0,6,0,1,1,"DELETE",14,7)
                     USB_Files  = []
                     USB_Files  = (os.listdir(m_user))
                     if len(USB_Files) > 0:
@@ -1470,13 +1451,13 @@ while True:
                             os.system('mkdir ' + m_user + "/'" + USB_Files[0] + "'/Videos/")
                         text(0,0,2,0,1,"CAPTURE",16,0)
                         while SD_storage > SD_limit:
-                            Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+                            Jpegs = glob.glob(vid_dir + '2*.jpg')
                             Jpegs.sort()
                             if len(Jpegs) > 0:
                                 for q in range(0,len(Jpegs)):
                                     if os.path.getsize(Jpegs[q]) > 0:
                                         shutil.move(Jpegs[q],m_user + "/'" + USB_Files[0] + "'/Videos/")
-                            Videos = glob.glob(h_user + '/Videos/2???????????.h264')
+                            Videos = glob.glob(vid_dir + '2???????????.h264')
                             Videos.sort()
                             if len(Videos) > 0:
                                 for q in range(0,len(Videos)):
@@ -1499,7 +1480,7 @@ while True:
                             Capture = 0 # stop
                         else:
                             # remove oldest video from SD card
-                            Videos = glob.glob(h_user + '/Videos/2???????????.h264')
+                            Videos = glob.glob(vid_dir + '2???????????.h264')
                             Videos.sort()
                             if os.path.getsize(Videos[q]) > 0:
                                 os.remove(Videos[0])
@@ -1511,7 +1492,7 @@ while True:
                         button(0,0,0)
                         text(0,0,0,0,1,"CAPTURE",16,7)
                         text(0,0,3,1,1,vf,14,7)
-                    elif menu == -1 :
+                    elif menu == -1 and frames > 0 :
                         button(0,0,5)
                         text(0,0,3,0,1,"CAPTURE",16,2)
                         vf = str(frames)
@@ -1703,16 +1684,22 @@ while True:
                          print ("Step 13 EXIT")
                     pause_thread = True
 
-                    # Move MP4s to USB if present
+                    # Move h264s and Stills to USB/Videos if present
                     USB_Files  = []
                     USB_Files  = (os.listdir(m_user))
                     if len(USB_Files) > 0:
-                        Videos = glob.glob(h_user + '/Videos/*.mp4')
+                        Videos = glob.glob(vid_dir + '*.h264')
                         Videos.sort()
                         for xx in range(0,len(Videos)):
                             movi = Videos[xx].split("/")
                             if not os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/" + movi[4]):
                                 shutil.move(Videos[xx],m_user + "/" + USB_Files[0] + "/Videos/")
+                        Jpegs = glob.glob(vid_dir + '*.jpg')
+                        Jpegs.sort()
+                        for xx in range(0,len(Jpegs)):
+                            movi = Jpegs[xx].split("/")
+                            if not os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/" + movi[4]):
+                                shutil.move(Jpegs[xx],m_user + "/" + USB_Files[0] + "/Videos/")
                     if use_gpio == 1 and fan_ctrl == 1:
                         led_fan.value = 0
                     stop_thread = True
@@ -2437,7 +2424,7 @@ while True:
                     if menu == 4:
                         text(0,6,3,1,1,"STILL ",14,7)
                         text(0,7,3,1,1,"ALL VIDS ",14,7)
-                    Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+                    Jpegs = glob.glob(vid_dir + '2*.jpg')
                     Jpegs.sort()
                     if (h == 1 and event.button == 1) or event.button == 4:
                         q +=1
@@ -2466,16 +2453,16 @@ while True:
 
                 elif g == 2 and menu == 4 and show == 1 and (frames > 0):
                     #Show Video
-                    vids = glob.glob(h_user + '/Videos/2*.h264')
+                    vids = glob.glob(vid_dir + '2*.h264')
                     vids.sort()
                     jpgs = Jpegs[q].split("/")
                     jp = jpgs[4][:-4]
                     stop = 0
-                    for x in range(len(vids)-1,0,-1):
+                    for x in range(len(vids)-1,-1,-1):
                         vide = vids[x].split("/")
                         vid = vide[4][:-5]
                         if vid < jp and stop == 0:
-                            os.system("vlc " + h_user + '/Videos/' + vid + '.h264')
+                            os.system("vlc " + vid_dir + vid + '.h264')
                             stop = 1
                             
 
@@ -2508,17 +2495,17 @@ while True:
                     menu_timer  = time.monotonic()
                     if os.path.exists('mylist.txt'):
                         os.remove('mylist.txt')
-                    Mideos = glob.glob(h_user + '/Videos/*.h264')
-                    Jpegs = glob.glob(h_user + '/Videos/*.jpg')
+                    Mideos = glob.glob(vid_dir + '*.h264')
+                    Jpegs = glob.glob(vid_dir + '*.jpg')
                     USB_Files  = []
                     USB_Files  = (os.listdir(m_user))
-                    if len(USB_Files) > 0 and frames > 0:
+                    if len(USB_Files) > 0 and len(Mideos) > 0:
                         pause_thread = True
                         if not os.path.exists(m_user + "/'" + USB_Files[0] + "'/Videos/") :
                             os.system('mkdir ' + m_user + "/'" + USB_Files[0] + "'/Videos/")
                         text(0,5,3,0,1,"MOVING",14,7)
                         text(0,5,3,1,1,"h264s",14,7)
-                        Videos = glob.glob(h_user + '/Videos/*.h264')
+                        Videos = glob.glob(vid_dir + '*.h264')
                         Videos.sort()
                         for xx in range(0,len(Videos)):
                             movi = Videos[xx].split("/")
@@ -2535,8 +2522,8 @@ while True:
                                 else:
                                     if os.path.exists(Videos[xx][:-4] + ".jpg"):
                                         os.remove(Videos[xx][:-4] + ".jpg")
-                        Videos = glob.glob(h_user + '/Videos/*.h264')
-                        Jpegs = glob.glob(h_user + '/Videos/*.jpg')
+                        Videos = glob.glob(vid_dir + '*.h264')
+                        Jpegs = glob.glob(vid_dir + '*.jpg')
                         for xx in range(0,len(Jpegs)):
                             os.remove(Jpegs[xx])
                         frames = len(Videos)
@@ -2549,7 +2536,7 @@ while True:
                     # DELETE A STILL
                     menu_timer  = time.monotonic()
                     try:
-                      Jpegs = glob.glob(h_user + "/" + '/Videos/2*.jpg')
+                      Jpegs = glob.glob(vid_dir + '2*.jpg')
                       Jpegs.sort()
                       fontObj = pygame.font.Font(None, 70)
                       msgSurfaceObj = fontObj.render("DELETING....", False, (255,0,0))
@@ -2560,7 +2547,7 @@ while True:
                       os.remove(Jpegs[q])
                     except:
                         pass
-                    Jpegs = glob.glob(h_user + "/" + '/Videos/2*.jpg')
+                    Jpegs = glob.glob(vid_dir + '2*.jpg')
                     frames = len(Jpegs)
                     Jpegs.sort()
                     if q > len(Jpegs)-1:
@@ -2611,10 +2598,10 @@ while True:
                         windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
                         pygame.display.update()
                         try:
-                            Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+                            Jpegs = glob.glob(vid_dir + '2*.jpg')
                             for xx in range(0,len(Jpegs)):
                                 os.remove(Jpegs[xx])
-                            Videos = glob.glob(h_user + '/Videos/2???????????.h264')
+                            Videos = glob.glob(vid_dir + '2???????????.h264')
                             for xx in range(0,len(Videos)):
                                 os.remove(Videos[xx])
                             frames = 0
@@ -2630,7 +2617,7 @@ while True:
                         oldimg = []
                     
                 elif g == 8 and menu == 4 and ( frames > 0):
-                    # SHOW ALL videos
+                    # SHOW ALL stills
                     menu_timer  = time.monotonic()
                     text(0,8,2,0,1,"STOP",14,7)
                     text(0,8,2,1,1,"     ",14,7)
@@ -2665,7 +2652,7 @@ while True:
                                     pygame.display.update()
                                     time.sleep(0.5)
                     text(0,8,2,0,1,"SHOW ALL",14,7)
-                    text(0,8,2,1,1,"Videos",14,7)
+                    text(0,8,2,1,1,"Stills",14,7)
                     q = nq - 1
 
                 elif g == 9 and menu == 4 and show == 1:
@@ -2673,7 +2660,7 @@ while True:
                     menu_timer  = time.monotonic()
                     if os.path.exists('mylist.txt'):
                         os.remove('mylist.txt')
-                    Videos = glob.glob(h_user + '/Videos/2???????????.h264')
+                    Videos = glob.glob(vid_dir + '2???????????.h264')
                     Videos.sort()
                     if len(Videos) > 0:
                         pause_thread = True
@@ -2690,8 +2677,8 @@ while True:
                                 txt = "file " + Videos[w]
                                 with open('mylist.txt', 'a') as f:
                                     f.write(txt + "\n")
-                                if os.path.exists(h_user + '/Videos/' + Videos[w] + ".jpg"):
-                                    image = pygame.image.load( h_user + '/Videos/' + Videos[w] + ".jpg")
+                                if os.path.exists(vid_dir + Videos[w] + ".jpg"):
+                                    image = pygame.image.load( vid_dir + Videos[w] + ".jpg")
 
                                 imageo = pygame.transform.scale(image, (pre_width,pre_height))
                                 windowSurfaceObj.blit(imageo, (0, 0))
@@ -2729,7 +2716,7 @@ while True:
                                     os.system('mkdir ' + m_user + "/'" + USB_Files[0] + "'/Videos/")
                                 text(0,8,3,0,1,"MOVING",14,7)
                                 text(0,8,3,1,1,"MP4s",14,7)
-                                Videos = glob.glob(h_user + '/Videos/*.mp4')
+                                Videos = glob.glob(vid_dir + '*.mp4')
                                 Videos.sort()
                                 for xx in range(0,len(Videos)):
                                     movi = Videos[xx].split("/")
@@ -2744,12 +2731,12 @@ while True:
                                          else:
                                              if os.path.exists(Videos[xx][:-4] + ".jpg"):
                                                  os.remove(Videos[xx][:-4] + ".jpg")
-                                Videos = glob.glob(h_user + '/Videos/*.mp4')
+                                Videos = glob.glob(vid_dir + '*.mp4')
                                 frames = len(Videos)
                                 text(0,8,0,0,1,"MOVE MP4s",14,7)
                                 text(0,8,0,1,1,"to USB",14,7)
                        
-                        Videos = glob.glob(h_user + '/Videos/2???????????.h264')
+                        Videos = glob.glob(vid_dir + '2???????????.h264')
                         USB_Files  = (os.listdir(m_user))
                         Videos.sort()
                         w = 0
@@ -3512,7 +3499,7 @@ while True:
                         text(0,8,3,1,1," 0       1  ",14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)                        
 
-                    if g == 6 and (frames > 0):
+                    if g == 6:
                         # show menu
                         menu = 4
                         menu_timer  = time.monotonic()
@@ -3520,7 +3507,7 @@ while True:
                             button(0,d,0)
                         show = 1
                         old_cap = Capture
-                        Jpegs = glob.glob(h_user + '/Videos/2*.jpg')
+                        Jpegs = glob.glob(vid_dir + '2*.jpg')
                         frames = len(Jpegs)
                         Jpegs.sort()
                         q = 0
@@ -3549,12 +3536,8 @@ while True:
                             text(0,4,3,1,1,"No",14,7)
                         else:
                             text(0,4,3,1,1,"Yes",14,7)
-                        if frames > 0:
-                            text(0,5,2,0,1,"MOVE h264s",14,7)
-                            text(0,5,2,1,1,"to USB",14,7)
-                        else:
-                            text(0,5,0,0,1,"MOVE h264s",14,7)
-                            text(0,5,0,1,1,"to USB",14,7)
+                        text(0,5,2,0,1,"MOVE h264s",14,7)
+                        text(0,5,2,1,1,"to USB",14,7)
                         text(0,6,3,0,1,"DELETE ",14,7)
                         text(0,6,3,1,1,"STILL ",14,7)
                         text(0,7,3,0,1,"DELETE",14,7)
