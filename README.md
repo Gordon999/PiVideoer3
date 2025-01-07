@@ -50,3 +50,7 @@ Note buttons with RED text use right mouse click, others left click. Click on le
 
 ![connections](CONNECTIONS.jpg)
 
+## Setup
+
+![Setup](setup.jpg)
+
