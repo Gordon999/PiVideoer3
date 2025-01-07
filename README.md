@@ -14,7 +14,7 @@ On a Pi5 allows switching of 2 cameras based on sunrise/sunset or set times.
 
 The idea is to put a normal camera on cam0 and a Noir camera on cam1, or a waveshare imx290-83 on cam 0 and allow it to switch the Ir filter
 
-If you only have a single camera with id filter you could change the ir light for a normal light for night use.
+If you only have a single camera with ir filter you could change the ir light for a normal light for night use.
 
 It will capture videos at 25fps at 1920 x 1080 (can be changed in the script), or on a GS camera 1456 x 1088.
 
