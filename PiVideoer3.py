@@ -44,7 +44,7 @@ import ephem
 import datetime
 
 # Version
-version = "0.06"
+version = "0.07"
 
 # set video parameters
 vid_width    = 1920
@@ -120,7 +120,7 @@ mp4_anno      = 1       # mp4_annotate MP4s with date and time , 1 = yes, 0 = no
 SD_F_Act      = 1       # Action on SD FULL, 0 = STOP, 1 = DELETE OLDEST VIDEO, 2 = COPY TO USB (if fitted) *
 interval      = 0       # seconds of wait between capturing Pictures / TIMELAPSE (set threshold to 0)*
 v_length      = 300000  # video length in mS *
-rec_stop      = 1       # stop recording at night, 1 = YES
+rec_stop      = 0       # stop recording at night, 1 = YES
 # setup for 1st camera
 mode          = 1       # set camera mode *
 speed         = 18      # set manual shutter , in shutters list *
@@ -172,10 +172,10 @@ check_time    = 10      # fan sampling time in seconds *
 fan_low       = 65      # fan OFF below this, 25% to 100% pwm above this *
 fan_high      = 78      # fan 100% pwm above this *
 sd_hour       = 0       # Shutdown Hour, 1 - 23, 0 will NOT SHUTDOWN *
-on_hour       = 12      # Switch Camera 1-2 Hour, 1 - 23, 0 will NOT SWITCH *
-of_hour       = 14      # Switch Camera 2-1 Hour, 1 - 23, 0 will NOT SWITCH *
-on_mins       = 12      # Switch Camera 1-2 mins, 0 - 59 *
-of_mins       = 14      # Switch Camera 2-1 mins, 0 - 59 *
+on_hour       = 8       # Switch Camera 1-2 Hour, 1 - 23, 0 will NOT SWITCH *
+of_hour       = 0       # Switch Camera 2-1 Hour, 1 - 23, 0 will NOT SWITCH *
+on_mins       = 20      # Switch Camera 1-2 mins, 0 - 59 *
+of_mins       = 0       # Switch Camera 2-1 mins, 0 - 59 *
 ir_on_hour    = 9       # Switch IR Filter ON Hour, 1 - 23, 0 will NOT SWITCH *
 ir_of_hour    = 10      # Switch IR Filter OFF Hour, 1 - 23, 0 will NOT SWITCH *
 ir_on_mins    = 0       # Switch IR Filter ON mins, 0 - 59 *
@@ -183,7 +183,7 @@ ir_of_mins    = 0       # Switch IR Filter OFF mins, 0 - 59 *
 m_alpha       = 130     # MASK ALPHA *
 sync_time     = 120     # time sync check time in seconds *
 camera        = 0       # camera in use *
-camera_sw     = 0       # camera switch mode *
+camera_sw     = 2       # camera switch mode *
 
 # * adjustable whilst running
 
@@ -406,7 +406,7 @@ ir_of_time = (ir_of_hour * 60) + ir_of_mins
 
 def suntimes():
     global sr_seconds,ss_seconds,now_seconds,ir_on_hour,ir_on_mins,ir_of_hour,ir_of_mins,menu,synced,Pi_Cam
-    global on_hour,on_mins,of_hour,of_mins,camera_sw,on_time,of_time,IRF
+    global on_hour,on_mins,of_hour,of_mins,camera_sw,on_time,of_time,IRF,ir_on_time,ir_of_time
     sun = ephem.Sun()
     r1 = str(somewhere.next_rising(sun))
     sunrise = datetime.datetime.strptime(str(r1), '%Y/%m/%d %H:%M:%S')
@@ -423,7 +423,6 @@ def suntimes():
     now = datetime.datetime.now()
     a_timedelta = now - datetime.datetime(2020, 1, 1)
     now_seconds = a_timedelta.total_seconds() + (UTC_offset * 3600)
-    #print(sunrise,sunset,now,sr_seconds,ss_seconds,now_seconds)
     if IRF == 0:
         ir_on_hour = int(time1a[0]) + UTC_offset
         if ir_on_hour > 23:
@@ -437,27 +436,29 @@ def suntimes():
         if ir_of_hour < 0:
             ir_of_hour += 24
         ir_of_mins = int(time2a[1])
+        ir_on_time = (ir_on_hour * 60) + ir_on_mins
+        ir_of_time = (ir_of_hour * 60) + ir_of_mins
         if Pi_Cam == 9 and (menu == 2 or menu ==7):
           if synced == 1:
-            if ir_on_mins > 9:
-                text(0,1,2,1,1,str(ir_on_hour) + ":" + str(ir_on_mins),14,7)
-            else:
-                text(0,1,2,1,1,str(ir_on_hour) + ":0" + str(ir_on_mins),14,7)
+              if ir_on_mins > 9:
+                  text(0,1,2,1,1,str(ir_on_hour) + ":" + str(ir_on_mins),14,7)
+              else:
+                  text(0,1,2,1,1,str(ir_on_hour) + ":0" + str(ir_on_mins),14,7)
           else:
-            if ir_on_mins > 9:
-                text(0,1,0,1,1,str(ir_on_hour) + ":" + str(ir_on_mins),14,7)
-            else:
-                text(0,1,0,1,1,str(ir_on_hour) + ":0" + str(ir_on_mins),14,7)
+              if ir_on_mins > 9:
+                  text(0,1,0,1,1,str(ir_on_hour) + ":" + str(ir_on_mins),14,7)
+              else:
+                  text(0,1,0,1,1,str(ir_on_hour) + ":0" + str(ir_on_mins),14,7)
           if synced == 1 :
-            if ir_of_mins > 9:
-                text(0,2,2,1,1,str(ir_of_hour) + ":" + str(ir_of_mins),14,7)
-            else:
-                text(0,2,2,1,1,str(ir_of_hour) + ":0" + str(ir_of_mins),14,7)
+              if ir_of_mins > 9:
+                  text(0,2,2,1,1,str(ir_of_hour) + ":" + str(ir_of_mins),14,7)
+              else:
+                  text(0,2,2,1,1,str(ir_of_hour) + ":0" + str(ir_of_mins),14,7)
           else:
-            if ir_of_mins > 9:
-                text(0,2,0,1,1,str(ir_of_hour) + ":" + str(ir_of_mins),14,7)
-            else:
-                text(0,2,0,1,1,str(ir_of_hour) + ":0" + str(ir_of_mins),14,7)
+              if ir_of_mins > 9:
+                  text(0,2,0,1,1,str(ir_of_hour) + ":" + str(ir_of_mins),14,7)
+              else:
+                  text(0,2,0,1,1,str(ir_of_hour) + ":0" + str(ir_of_mins),14,7)
     if camera_sw == 0:
         on_hour = int(time1a[0]) + UTC_offset
         if on_hour > 23:
@@ -604,6 +605,11 @@ def Camera_Version():
             
 Camera_Version()
 suntimes()
+# check current hour
+now = datetime.datetime.now()
+hour = int(now.strftime("%H"))
+mins = int(now.strftime("%M"))
+print((hour* 60) + mins, ir_on_time,(hour* 60) + mins, ir_of_time)
 
 print(Pi_Cam,cam1,cam2)
 
