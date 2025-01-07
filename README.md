@@ -46,3 +46,7 @@ Download PiVideoer3.py and copy to /home/《user》
 
 Note buttons with RED text use right mouse click, others left click. Click on left or right part of button as appropriate.
 
+## Connections
+
+![connections](CONNECTIONS.jpg)
+
