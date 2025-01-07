@@ -30,7 +30,7 @@ Captured stills can be viewed and the video played it comes from.
 
 If the sd card gets full the action taken can be set to stop, delete oldest video or move to usb ( assuming usb stick attached).
 
-Will move all h264s to usb at exit, assuming usb stick attached.
+Canbe set to move all h264s to usb at exit, assuming usb stick attached.
 
 Can control focus on a pi v3camera, auto, continuous,  manual or spot. For spot click on image when in menu showing focus options.
 
