@@ -38,7 +38,7 @@ h264s and jpegs captured in /home/《user》/Videos.  h264s can be converted to 
 
 To install:
 
-Install latest FULL RaspiOS based on Bullseye or Bookworm (tested with FULL 32bit and 64bit versions)
+Install latest FULL RaspiOS based on Bookworm (tested with FULL 32bit and 64bit versions)
 
 if using BOOKWORM switch to X11. sudo raspi-config, choose advanced , choose 6A X11 option, reboot.
 
