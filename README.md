@@ -24,7 +24,7 @@ It will capture videos at 25fps at 1920 x 1080 (can be changed in the script), o
 
 Pi v3, Arducam HAWKEYE, OWLSIGHT or 16MP cameras can be auto / manually focussed. Pi v3 also can do spot focus.
 
-Makes individual h264s, and can make a FULL MP4 of h264s stored.
+Makes individual h264s, and can make a FULL MP4 of all h264s stored.
 
 Captured stills can be viewed and the video played it comes from.
 
