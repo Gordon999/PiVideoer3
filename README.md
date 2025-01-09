@@ -1,4 +1,4 @@
-&# PiVideoer3
+# PiVideoer3
 
 
 A python script to continuously capture Videos from Pi v1,2,3 , HQ or GS cameras , Arducam OWLSIGHT or HAWKEYE 64MP AF camera, Arducam 16MP AF camera or Waveshare imx290-83 camera, still captures triggered by motion , external trigger or manually. 
