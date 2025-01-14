@@ -8,7 +8,8 @@ For arducam cameras follow their installation instructions eg. https://docs.ardu
 
 The waveshare imx290-83 IR filter can be switched (camera 1 connected to gpio26,pin37, camera2 connected to gpio19,pin35) based on sunrise/sunset or set times. IR light can be controlled by gpio13,pin33 (interface required). 
 
-Pi4 or Pi5 recommended.
+Pi4 or Pi5 recommended. If using the sd card as the main store use a 64gb or 128gb card, if using RAM then as much as possible but note a loss of mains 
+will loose all your videos.
 
 Set your location, and hours difference to utc time in the script.
 
