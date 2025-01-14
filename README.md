@@ -31,7 +31,7 @@ Makes individual MP4s, length set in script, default 5 mins (300 seconds)
 
 Captured stills can be viewed and the video played it comes from.
 
-Can be set to store to RAM, SD-CARD or USB drive.
+Can be set to store to RAM, SD-CARD or USB drive. Set 'store' variable in the script to 0,1 or 2.
 
 If the RAM / SD-CARD get full the action taken can be set to stop, delete oldest video or move to usb (assuming usb drive / stick attached).
 
