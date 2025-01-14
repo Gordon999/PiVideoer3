@@ -27,7 +27,7 @@ It will capture videos at 30fps at 1280 x 720 (can be changed in the script), or
 
 Pi v3, Arducam HAWKEYE, OWLSIGHT or 16MP cameras can be auto / manually focussed. Pi v3 also can do spot focus.
 
-Makes individual MP4s, length set in script, defulat 5 mins (300 seconds)
+Makes individual MP4s, length set in script, default 5 mins (300 seconds)
 
 Captured stills can be viewed and the video played it comes from.
 
