@@ -29,7 +29,7 @@ Pi v3, Arducam HAWKEYE, OWLSIGHT or 16MP cameras can be auto / manually focussed
 
 Makes individual MP4s, length set in script, default 5 mins (300 seconds)
 
-Captured stills can be viewed and the video played it comes from.
+Captured stills can be viewed and the video played it comes from. Videos and captures will continue to be captured whilst you view stills or videos.
 
 Can be set to store to RAM, SD-CARD or USB drive. Set 'store' variable in the script to 0,1 or 2.
 
