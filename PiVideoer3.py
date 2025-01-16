@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.03"
+version = "1.04"
 
 import time
 import cv2
@@ -239,10 +239,6 @@ sw_act        = 1
 menu          = -1
 sspeed1       = 100
 stop_rec      = 0
-#framerate    = 30
-#fps          = framerate
-#fps1         = framerate
-#mp4_fps      = framerate
 
 # Camera max exposure 
 # whatever value set it MUST be in shutters list !!
@@ -1527,7 +1523,7 @@ while True:
                 text(0,0,1,0,1,"Light",14,7)
             else:
                 text(0,0,1,0,1,"RECORD",14,7)
-   # stop recording
+    # stop recording
     elif encoding == True and (time.monotonic() - start > v_length/1000 or stop_rec == 1):
         picam2.stop_recording()
         now = datetime.datetime.now()
@@ -1535,20 +1531,6 @@ while True:
         print( "Stop Recording...",timestamp)
         start = time.monotonic()
         encoding = False
-        Jpegs = glob.glob(vid_dir + '2*.jpg')
-        Jpegs.sort()
-        frames = len(Jpegs)
-        vf = str(frames)
-        if menu == -1:
-            if Capture == 0 and menu == -1:
-                button(0,0,0)
-                text(0,0,0,0,1,"CAPTURE",16,7)
-                text(0,0,3,1,1,str(frames),14,7)
-            elif Capture == 1 and menu == -1:
-                button(0,0,5)
-                text(0,0,6,0,1,"CAPTURE",16,2)
-                text(0,0,3,1,1,str(frames),14,2)
-        last = time.monotonic()
         # check free RAM and Memory storage space
         st = os.statvfs("/run/shm/")
         freeram = (st.f_bavail * st.f_frsize)/1100000
@@ -1556,7 +1538,10 @@ while True:
         Mem_storage = ((1 - (free.f_bavail / free.f_blocks)) * 100)
         ss = str(int(freeram)) + "MB- " + str(int(Mem_storage)) + "%"
         if menu == -1:
-            text(0,1,3,1,1,ss,14,0)
+            if record == 0:
+                text(0,1,6,1,1,ss,12,3)
+            else:
+                text(0,1,6,1,1,ss,12,0)
         record = 0
         timer10 = time.monotonic()
         oldimg = []
@@ -1586,13 +1571,17 @@ while True:
                     for q in range(0,len(Videos)):
                         if os.path.getsize(Videos[q]) > 0:
                             shutil.move(Videos[q],m_user + "/" + USB_Files[0] + "/Videos/")
+                # check free RAM and Memory storage space
+                st = os.statvfs("/run/shm/")
+                freeram = (st.f_bavail * st.f_frsize)/1100000
                 free = (os.statvfs(vid_dir))
                 Mem_storage = ((1 - (free.f_bavail / free.f_blocks)) * 100)
-                ss =str(int(Mem_storage)) + "%"
-                if record == 0:
-                     text(0,1,6,1,1,ss,12,3)
-                else:
-                     text(0,1,6,1,1,ss,12,0)
+                ss = str(int(freeram)) + "MB- " + str(int(Mem_storage)) + "%"
+                if menu == -1:
+                    if record == 0:
+                        text(0,1,6,1,1,ss,12,3)
+                    else:
+                        text(0,1,6,1,1,ss,12,0)
             text(0,0,6,0,1,"CAPTURE",16,0)
                         
         elif Mem_storage > Mem_limit:
@@ -1621,19 +1610,6 @@ while True:
                         text(0,1,6,1,1,ss,12,3)
                     else:
                         text(0,1,6,1,1,ss,12,0)
-        if Capture == 0 and menu == -1:
-            button(0,0,0)
-            text(0,0,0,0,1,"CAPTURE",16,7)
-            text(0,0,3,1,1,vf,14,7)
-        elif menu == -1 and frames > 0 :
-            button(0,0,5)
-            text(0,0,3,0,1,"CAPTURE",16,2)
-            vf = str(frames)
-            text(0,0,3,1,1,vf,14,2)
-        if menu == -1:
-             button(0,1,3)
-             text(0,1,6,0,1,"RECORD",16,3)
-             text(0,1,6,1,1,ss,12,3)
         pause_thread = False
                  
     save_config = 0
