@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.04"
+version = "1.08"
 
 import time
 import cv2
@@ -48,7 +48,10 @@ import datetime
 import subprocess
 
 # set Memory Store, 0 = RAM, 1 = SD CARD, 2 = USB drive
-store = 1
+store = 1  
+
+# To save in a daily directory, eg /Video/250112/, set daily = True
+daily = True
 
 # Your Location
 somewhere = ephem.Observer()
@@ -65,18 +68,18 @@ lores_width  = 640
 lores_height = 480
 
 # set screen size
-scr_width  = 800
-scr_height = 480
+scr_width    = 800
+scr_height   = 480
 
 # set preview size
-pre_width  = 640
-pre_height = 480
+pre_width    = 640
+pre_height   = 480
 
 # move MP4s and JPGs to USB on EXIT
-MP4stoUSB = False
+MP4stoUSB    = False
 
 # enable watchdog (will do a reboot)
-watch    = False
+watch        = False
 
 # find username
 h_user = "/home/" + os.getlogin( )
@@ -91,6 +94,8 @@ if store == 0:
     vid_dir = "/run/shm/"
 elif store == 2 and len(USB_Files) > 0:
     vid_dir = m_user + "/" + USB_Files[0] + "/Videos/"
+elif store == 3 and os.path.exists("/mnt/mydisk") :
+    vid_dir = "/mnt/mydisk/"
 else:
     vid_dir = h_user + "/Videos/"
 
@@ -239,17 +244,8 @@ sw_act        = 1
 menu          = -1
 sspeed1       = 100
 stop_rec      = 0
-
-# Camera max exposure 
-# whatever value set it MUST be in shutters list !!
-max_v1      = 1
-max_v2      = 11
-max_v3      = 112
-max_hq      = 650
-max_16mp    = 200
-max_64mp    = 435
-max_gs      = 15
-max_v9      = 15
+show_vid      = 1
+old_show_vid  = show_vid
 
 # apply timestamp to videos
 def apply_timestamp(request):
@@ -264,13 +260,11 @@ def apply_timestamp(request):
           cv2.rectangle(m.array, origin, end_point, (0,0,0), -1) 
           cv2.putText(m.array, timestamp, origin, font, scale, colour, thickness)
       
-cameras       = ['Unknown','Pi v1','Pi v2','Pi v3','Pi HQ','Arducam 16MP','Arducam 64MP','Pi GS','Arducam Owlsight','imx290','ov9281']
-camids        = ['','ov5647','imx219','imx708','imx477','imx519','arduca','imx296','ov64a4','imx290','ov9281']
-swidths       = [0,2592,3280,4608,4056,4656,9152,1456,9248,1920,1920]
-sheights      = [0,1944,2464,2592,3040,3496,6944,1088,6944,1080,1080]
-max_gains     = [64,     255,      40,      64,      88,      64,      64,      64,      64,    64,      64]
-max_shutters  = [0,   max_v1, max_v2,   max_v3,  max_hq,max_16mp,max_64mp,  max_gs,max_64mp, max_v9, max_v9]
-mags          = [64,     255,      40,      64,      88,      64,      64,      64,      64,     64,     64]
+cameras       = ['', 'Pi v1', 'Pi v2', 'Pi v3', 'Pi HQ','Arducam 16MP','Arducam 64MP', 'Pi GS','Arducam Owlsight','imx290','imx500','ov9281']
+camids        = ['','ov5647','imx219','imx708','imx477',      'imx519',      'arduca','imx296',          'ov64a4','imx290','imx500','ov9281']
+max_gains     = [64,     255,      40,      64,      88,            64,            64,      64,                64,      64,      64,      64]
+swidths       = [ 0,    2592,    3280,    4608,    4056,          4656,          9152,    1456,              9248,    1920,    1920,    1280]
+sheights      = [ 0,    1944,     2464,   2592,    3040,          3496,          6944,    1088,              6944,    1080,    1080,     800]
 modes         = ['manual','normal','short','long']
 meters        = ['CentreWeighted','Spot','Matrix']
 awbs          = ['auto','tungsten','fluorescent','indoor','daylight','cloudy','custom']
@@ -340,7 +334,7 @@ config = list(map(int,config))
 
 h_crop      = config[0]
 threshold   = config[1]
-#fps         = config[2]
+fps         = config[2]
 mode        = config[3]
 speed       = config[4]
 gain        = config[5]
@@ -375,12 +369,12 @@ col_filter  = config[33]
 nr          = config[34]
 auto_time   = config[35]
 ram_limit   = config[36]
-#mp4_fps     = config[37]
+mp4_fps     = config[37]
 vid_anno    = config[38]
-Mem_F_Act    = config[39]
+Mem_F_Act   = config[39]
 dspeed      = config[40]
 IRF         = config[41]
-#camera      = config[42]
+#camera     = config[42]
 mode1       = config[43]
 speed1      = config[44]
 gain1       = config[45]
@@ -395,7 +389,7 @@ denoise1    = config[53]
 quality1    = config[54]
 sharpness1  = config[55]
 saturation1 = config[56]
-#fps1        = config[57]
+fps1        = config[57]
 AF_f_mode1  = config[58]
 AF_focus1   = config[59]
 AF_f_mode   = config[60]
@@ -607,6 +601,10 @@ def Camera_Version():
   if Pi_Cam == 7:
       vid_width  = 1456
       vid_height = 1088
+  elif Pi_Cam == 11:
+      vid_width  = 1280
+      vid_height = 800
+
   if a > pre_width - v_crop:
       a = int(pre_width/2)
   if b > pre_height - h_crop:
@@ -614,10 +612,27 @@ def Camera_Version():
   swidth = swidths[Pi_Cam]
   sheight = sheights[Pi_Cam]
 
-  if Pi_Cam == -1:
-        print("No Camera Found")
-        pygame.display.quit()
-        sys.exit()
+  if Pi_Cam != -1:
+      print("Camera:",cameras[Pi_Cam])
+  elif cam0 != "0" and camera == 0:
+      Pi_Cam      = 0
+      cameras[0]  = cam0
+      camids[0]   = cam0[0:6]
+      print("Camera:",cameras[Pi_Cam])
+      max_gain    = max_gains[Pi_Cam]
+      mag         = int(max_gain/4)
+  elif cam1 != "1" and camera == 1:
+      Pi_Cam      = 0
+      cameras[0]  = cam1
+      camids[0]   = cam1[0:6]
+      print("Camera:",cameras[Pi_Cam])
+      max_gain    = max_gains[Pi_Cam]
+      mag         = int(max_gain/4)
+  else:
+      print("No Camera Found")
+      pygame.display.quit()
+      sys.exit()
+      
   pygame.display.set_caption('PiVideoer3  Camera: ' + cameras[Pi_Cam] + ' : ' + str(camera))
             
 Camera_Version()
@@ -670,7 +685,7 @@ if os.path.exists('mylist.txt'):
 
 def start_camera():
     # start stream
-    global lores_width,lores_height,vid_width,vid_height,picam2,encoder,encoding,lsize,start,stimestamp,camera,Pi,vid_dir
+    global lores_width,lores_height,vid_width,vid_height,picam2,encoder,encoding,lsize,start,stimestamp,camera,Pi,vid_dir,dtimestamp,daily
     lsize = (lores_width,lores_height)
     picam2 = Picamera2(camera)
     video_config = picam2.create_video_configuration(main={"size": (vid_width, vid_height), "format": "RGB888"},
@@ -680,8 +695,14 @@ def start_camera():
     picam2.pre_callback = apply_timestamp
     encoding = True
     now = datetime.datetime.now()
+    if daily == True:
+        dtimestamp = now.strftime("%y%m%d/")
+    else:
+        dtimestamp = ""
+    if not os.path.exists(vid_dir + dtimestamp) :
+        os.system('mkdir ' + vid_dir + dtimestamp)
     stimestamp = now.strftime("%y%m%d%H%M%S")
-    output = FfmpegOutput(vid_dir + stimestamp + '.mp4')
+    output = FfmpegOutput(vid_dir + dtimestamp + stimestamp + '.mp4')
     picam2.start_recording(encoder, output)
     print( "Start Recording..", stimestamp)
     start = time.monotonic()
@@ -703,19 +724,19 @@ def set_parameters():
         elif mode == 3:
             picam2.set_controls({"AeEnable": True,"AeExposureMode": controls.AeExposureModeEnum.Long})
     time.sleep(1)
-    if awb == 0:
+    if awb == 0 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Auto})
-    elif awb == 1:
+    elif awb == 1 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Tungsten})
-    elif awb == 2:
+    elif awb == 2 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Fluorescent})
-    elif awb == 3:
+    elif awb == 3 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Indoor})
-    elif awb == 4:
+    elif awb == 4 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Daylight})
-    elif awb == 5:
+    elif awb == 5 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Cloudy})
-    elif awb == 6:
+    elif awb == 6 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Custom})
         cg = (red,blue)
         picam2.set_controls({"AwbEnable": False,"ColourGains": cg})
@@ -740,7 +761,8 @@ def set_parameters():
         picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
     elif meter == 2:
         picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
-    picam2.set_controls({"Saturation": saturation/10})
+    if Pi_Cam != 11:
+        picam2.set_controls({"Saturation": saturation/10})
     picam2.set_controls({"Sharpness": sharpness})
     if denoise == 0:
         picam2.set_controls({"NoiseReductionMode": controls.draft.NoiseReductionModeEnum.Off})
@@ -771,19 +793,19 @@ def set_parameters1():
         elif mode1 == 3:
             picam2.set_controls({"AeEnable": True,"AeExposureMode": controls.AeExposureModeEnum.Long})
     #time.sleep(1)
-    if awb1 == 0:
+    if awb1 == 0 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Auto})
-    elif awb1 == 1:
+    elif awb1 == 1 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Tungsten})
-    elif awb1 == 2:
+    elif awb1 == 2 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Fluorescent})
-    elif awb1 == 3:
+    elif awb1 == 3 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Indoor})
-    elif awb1 == 4:
+    elif awb1 == 4 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Daylight})
-    elif awb1 == 5:
+    elif awb1 == 5 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Cloudy})
-    elif awb1 == 6:
+    elif awb1 == 6 and Pi_Cam != 11:
         picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Custom})
         cg = (red1,blue1)
         picam2.set_controls({"AwbEnable": False,"ColourGains": cg})
@@ -808,7 +830,8 @@ def set_parameters1():
         picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Spot})
     elif meter1 == 2:
         picam2.set_controls({"AeMeteringMode": controls.AeMeteringModeEnum.Matrix})
-    picam2.set_controls({"Saturation": saturation1/10})
+    if Pi_Cam != 11:
+        picam2.set_controls({"Saturation": saturation1/10})
     picam2.set_controls({"Sharpness": sharpness1})
     if denoise1 == 0:
         picam2.set_controls({"NoiseReductionMode": controls.draft.NoiseReductionModeEnum.Off})
@@ -840,9 +863,9 @@ if len(USB_Files) > 0:
 # read list of existing Video Files
 Videos = []
 frames = 0
-Videos = glob.glob(vid_dir + '*.mp4')
+Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
 Videos.sort()
-Jpegs = glob.glob(vid_dir + '*.jpg')
+Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
 Jpegs.sort()
 frames = len(Jpegs)
 vf = str(frames)
@@ -936,8 +959,9 @@ def text(col,row,fColor,top,upd,msg,fsize,bcolor):
       pygame.display.update(bx, by, bw, bh)
 
 def main_menu():
-    global frames,menu,sd_hour,vf,synced,Capture,show,zoom,preview,scr_height,cwidth,old_cap,Jpegs
+    global frames,menu,sd_hour,vf,synced,Capture,show,zoom,preview,scr_height,cwidth,old_cap,Jpegs,old_show_vid, show_vid,dtimestamp
     menu = -1
+    show_vid = old_show_vid
     show = 0
     preview = 0
     Capture = old_cap
@@ -945,7 +969,7 @@ def main_menu():
     for d in range(0,11):
          button(0,d,0)
     button(0,1,3)
-    Jpegs = glob.glob(vid_dir + '2*.jpg')
+    Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
     Jpegs.sort()
     frames = len(Jpegs)
     vf = str(frames)
@@ -974,7 +998,7 @@ def main_menu():
     text(0,5,1,1,1,"Settings",14,7)
     text(0,7,1,0,1,"OTHER",14,7)
     text(0,7,1,1,1,"Settings ",14,7)
-    text(0,6,1,0,1,"SHOW,EDIT or",13,7)
+    text(0,6,1,0,1,"SHOW or",13,7)
     text(0,6,1,1,1,"DELETE",13,7)
     if Pi == 5 and cam2 != "2":
         text(0,8,1,0,1,"CAMERA 2",14,7)
@@ -1013,7 +1037,7 @@ temp = float(str(cpu_temp[1])[:-1])
 
 old_capture = Capture
 
-if awb == 0:
+if awb == 0 and Pi_Cam != 11:
     picam2.set_controls({"AwbEnable": True,"AwbMode": controls.AwbModeEnum.Auto})
 
 def watchdog(qq):
@@ -1221,7 +1245,7 @@ while True:
                 usedusb = os.statvfs(m_user + "/" + USB_Files[0] + "/")
                 USB_storage = ((1 - (usedusb.f_bavail / usedusb.f_blocks)) * 100)
             if len(USB_Files) > 0 and USB_storage < 90 and MP4stoUSB == True and store != 2:
-                Videos = glob.glob(vid_dir + '*.mp4')
+                Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
                 Videos.sort()
                 for xx in range(0,len(Videos)):
                     movi = Videos[xx].split("/")
@@ -1352,16 +1376,17 @@ while True:
                 if trace > 0:
                     print ("Step 6 DETECTED " + str(int((sar5/diff) * 100)))
                 if timer10 != 0:
-                   timer10 = time.monotonic()
+                    timer10 = time.monotonic()
                 if menu == 0:
                     text(0,1,1,0,1,"Low Detect "  + str(int((sar5/diff) * 100)) + "%",14,7)
                 if Capture == 1 or record == 1:
-                    print("New Motion", timestamp)
                     # save captured image
                     now = datetime.datetime.now()
+                    dtimestamp = now.strftime("%y%m%d/")
                     timestamp = now.strftime("%y%m%d%H%M%S")
+                    print("New Motion", timestamp)
                     image3 = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-                    cv2.imwrite(vid_dir + timestamp + ".jpg" , image3)
+                    cv2.imwrite(vid_dir + dtimestamp + timestamp + ".jpg" , image3)
                     # trigger external camera
                     if ES > 0 and use_gpio == 1: 
                         led_s_focus.on()
@@ -1378,7 +1403,7 @@ while True:
                     vid = 1
                     fx = 1
                     record = 0
-                    Jpegs = glob.glob(vid_dir + '2*.jpg')
+                    Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                     Jpegs.sort()
                     frames = len(Jpegs)
                     if Capture == 0 and menu == -1:
@@ -1415,8 +1440,12 @@ while True:
                         Capture = 0 # stop
                     elif Mem_F_Act == 1:
                         # remove oldest video from Memory
-                        Videos = glob.glob(vid_dir + '2???????????.mp4')
+                        if daily == True:
+                            Videos = glob.glob(vid_dir + '*/2???????????.mp4')
+                        else:
+                            Videos = glob.glob(vid_dir + dtimestamp + '2???????????.mp4')
                         Videos.sort()
+                        print(videos)
                         if os.path.getsize(Videos[q]) > 0:
                             os.remove(Videos[0])
                             print( "Deleted1: ",Videos[0])
@@ -1440,7 +1469,7 @@ while True:
                         if not os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/") :
                             os.system('mkdir ' + m_user + "/" + USB_Files[0] + "/Videos/")
                         while Mem_storage > Mem_limit:
-                            Videos = glob.glob(vid_dir + '2???????????.mp4')
+                            Videos = glob.glob(vid_dir + dtimestamp + '2???????????.mp4')
                             Videos.sort()
                             if os.path.getsize(Videos[0]) > 0:
                                 shutil.move(Videos[0],m_user + "/" + USB_Files[0] + "/Videos/")
@@ -1456,7 +1485,7 @@ while True:
                                 else:
                                     text(0,1,6,1,1,ss,12,0)
             # show frame
-            if show == 0:
+            if show == 0 and show_vid == 1:
               if trace > 0:
                   print ("SHOW FRAME")
               if zoom == 0:
@@ -1505,6 +1534,10 @@ while True:
               windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
               pygame.display.update(0,0,scr_width-bw,scr_height)
 
+            elif (stop_rec == 1 or show_vid == 0) and show == 0:
+                pygame.draw.rect(windowSurfaceObj,(0,0,0),Rect(0,0,pre_width,pre_height))
+                pygame.display.update(0,0,pre_width,pre_height)
+                
     if vidjr != 1:
         oldimg[:] = gray[:]
     vidjr = 0
@@ -1559,13 +1592,13 @@ while True:
                 os.system('mkdir ' + m_user + "/" + USB_Files[0] + "/Videos/")
             text(0,0,2,0,1,"CAPTURE",16,0)
             while Mem_storage > Mem_limit:
-                Jpegs = glob.glob(vid_dir + '2*.jpg')
+                Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                 Jpegs.sort()
                 if len(Jpegs) > 0:
                     for q in range(0,len(Jpegs)):
                         if os.path.getsize(Jpegs[q]) > 0:
                             shutil.move(Jpegs[q],m_user + "/" + USB_Files[0] + "/Videos/")
-                Videos = glob.glob(vid_dir + '2???????????.mp4')
+                Videos = glob.glob(vid_dir + dtimestamp + '2???????????.mp4')
                 Videos.sort()
                 if len(Videos) > 0:
                     for q in range(0,len(Videos)):
@@ -1592,7 +1625,10 @@ while True:
                 Capture = 0 # stop
             else:
                 # remove oldest video from Memory
-                Videos = glob.glob(vid_dir + '2???????????.mp4')
+                if daily == True:
+                    Videos = glob.glob(vid_dir + '*/2???????????.mp4')
+                else:
+                    Videos = glob.glob(vid_dir + dtimestamp + '2???????????.mp4')
                 Videos.sort()
                 if os.path.getsize(Videos[q]) > 0:
                     os.remove(Videos[0])
@@ -1709,7 +1745,7 @@ while True:
                             set_parameters()
                     main_menu()
                     
-# MENU -1  ====================================================================================================
+# MENU -1  MENUS ====================================================================================================
                 elif menu == -1: 
                     # MENUS
                     # check for usb_stick
@@ -1748,6 +1784,8 @@ while True:
                         # detection menu
                         menu = 0
                         menu_timer  = time.monotonic()
+                        old_show_vid = show_vid
+                        show_vid = 1
                         old_capture = Capture
                         Capture = 0
                         for d in range(0,10):
@@ -1791,6 +1829,8 @@ while True:
                         # camera 1 settings 1
                         menu = 1
                         menu_timer  = time.monotonic()
+                        old_show_vid = show_vid
+                        show_vid = 1
                         old_capture = Capture
                         Capture = 0
                         old_camera = camera
@@ -1837,8 +1877,9 @@ while True:
                         text(0,7,3,1,1,str(meters[meter]),14,7)
                         text(0,8,5,0,1,"Sharpness",14,7)
                         text(0,8,3,1,1,str(sharpness),14,7)
-                        text(0,9,5,0,1,"Saturation",14,7)
-                        text(0,9,3,1,1,str(saturation),14,7)
+                        if Pi_Cam != 11:
+                            text(0,9,5,0,1,"Saturation",14,7)
+                            text(0,9,3,1,1,str(saturation),14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
                         set_parameters()
  
@@ -1846,6 +1887,8 @@ while True:
                         # camera 1 settings 2
                         menu = 2
                         menu_timer  = time.monotonic()
+                        old_show_vid = show_vid
+                        show_vid = 1
                         old_camera = camera
                         camera = 0
                         Camera_Version()
@@ -1919,16 +1962,17 @@ while True:
                                 else:
                                     text(0,0,1,0,1,"Light",14,7)
                             text(0,0,3,1,1,IR_filters[IRF],14,7)
-                        text(0,6,5,0,1,"AWB",14,7)
-                        text(0,6,3,1,1,str(awbs[awb]),14,7)
-                        text(0,7,5,0,1,"Red",14,7)
-                        text(0,8,5,0,1,"Blue",14,7)
-                        if awb == 6:
-                            text(0,7,3,1,1,str(red)[0:3],14,7)
-                            text(0,8,3,1,1,str(blue)[0:3],14,7)
-                        else:
-                            text(0,7,0,1,1,str(red)[0:3],14,7)
-                            text(0,8,0,1,1,str(blue)[0:3],14,7)
+                        if Pi_Cam != 11:
+                            text(0,6,5,0,1,"AWB",14,7)
+                            text(0,6,3,1,1,str(awbs[awb]),14,7)
+                            text(0,7,5,0,1,"Red",14,7)
+                            text(0,8,5,0,1,"Blue",14,7)
+                            if awb == 6:
+                                text(0,7,3,1,1,str(red)[0:3],14,7)
+                                text(0,8,3,1,1,str(blue)[0:3],14,7)
+                            else:
+                                text(0,7,0,1,1,str(red)[0:3],14,7)
+                                text(0,8,0,1,1,str(blue)[0:3],14,7)
                         text(0,9,5,0,1,"Denoise",14,7)
                         text(0,9,3,1,1,str(denoises[denoise]),14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
@@ -2004,9 +2048,11 @@ while True:
                         menu_timer = time.monotonic()
                         for d in range(0,10):
                             button(0,d,0)
+                        old_show_vid = show_vid
+                        show_vid = 1
                         show = 1
                         old_cap = Capture
-                        Jpegs = glob.glob(vid_dir + '2*.jpg')
+                        Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                         frames = len(Jpegs)
                         Jpegs.sort()
                         q = 0
@@ -2043,6 +2089,11 @@ while True:
                             text(0,5,2,1,1,"to USB",14,7)
                         text(0,6,3,0,1,"DELETE",14,7)
                         text(0,6,3,1,1,"ALL MP4s ",14,7)
+                        text(0,9,2,0,1,"SHOW Camera",14,7)
+                        if old_show_vid == 0:
+                            text(0,9,3,1,1,"OFF",14,7)
+                        else:
+                            text(0,9,3,1,1,"ON",14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
                        
                     elif g == 7:
@@ -2107,6 +2158,8 @@ while True:
                         # camera 2 settings 1
                         menu = 6
                         menu_timer  = time.monotonic()
+                        old_show_vid = show_vid
+                        show_vid = 1
                         old_capture = Capture
                         Capture = 0
                         old_camera = camera
@@ -2155,8 +2208,9 @@ while True:
                         text(0,7,3,1,1,str(meters[meter1]),14,7)
                         text(0,8,5,0,1,"Sharpness",14,7)
                         text(0,8,3,1,1,str(sharpness1),14,7)
-                        text(0,9,5,0,1,"Saturation",14,7)
-                        text(0,9,3,1,1,str(saturation1),14,7)
+                        if Pi_Cam != 11:
+                            text(0,9,5,0,1,"Saturation",14,7)
+                            text(0,9,3,1,1,str(saturation1),14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
                         set_parameters1()
 
@@ -2164,6 +2218,8 @@ while True:
                         # camera 2 settings 2
                         menu = 7
                         menu_timer  = time.monotonic()
+                        old_show_vid = show_vid
+                        show_vid = 1
                         old_camera = camera
                         camera = 1
                         Camera_Version()
@@ -2238,16 +2294,17 @@ while True:
                                 else:
                                     text(0,0,1,0,1,"Light",14,7)
                             text(0,0,3,1,1,IR_filters[IRF],14,7)
-                        text(0,6,5,0,1,"AWB",14,7)
-                        text(0,6,3,1,1,str(awbs[awb1]),14,7)
-                        text(0,7,5,0,1,"Red",14,7)
-                        text(0,8,5,0,1,"Blue",14,7)
-                        if awb1 == 6:
-                            text(0,7,3,1,1,str(red1)[0:3],14,7)
-                            text(0,8,3,1,1,str(blue1)[0:3],14,7)
-                        else:
-                            text(0,7,0,1,1,str(red1)[0:3],14,7)
-                            text(0,8,0,1,1,str(blue1)[0:3],14,7)
+                        if Pi_Cam != 11:
+                            text(0,6,5,0,1,"AWB",14,7)
+                            text(0,6,3,1,1,str(awbs[awb1]),14,7)
+                            text(0,7,5,0,1,"Red",14,7)
+                            text(0,8,5,0,1,"Blue",14,7)
+                            if awb1 == 6:
+                                text(0,7,3,1,1,str(red1)[0:3],14,7)
+                                text(0,8,3,1,1,str(blue1)[0:3],14,7)
+                            else:
+                                text(0,7,0,1,1,str(red1)[0:3],14,7)
+                                text(0,8,0,1,1,str(blue1)[0:3],14,7)
                         text(0,9,5,0,1,"Denoise",14,7)
                         text(0,9,3,1,1,str(denoises[denoise1]),14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
@@ -2264,13 +2321,13 @@ while True:
                         USB_Files  = []
                         USB_Files  = (os.listdir(m_user))
                         if len(USB_Files) > 0 and MP4stoUSB == True and store != 2:
-                            Videos = glob.glob(vid_dir + '*.mp4')
+                            Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
                             Videos.sort()
                             for xx in range(0,len(Videos)):
                                 movi = Videos[xx].split("/")
                                 if not os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/" + movi[4]):
                                     shutil.move(Videos[xx],m_user + "/" + USB_Files[0] + "/Videos/")
-                            Jpegs = glob.glob(vid_dir + '*.jpg')
+                            Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
                             Jpegs.sort()
                             for xx in range(0,len(Jpegs)):
                                 movi = Jpegs[xx].split("/")
@@ -2281,7 +2338,7 @@ while True:
                         stop_thread = True
                         pygame.quit()
                                      
-# MENU 0 ====================================================================================================
+# MENU 0 DETECTION SETTINGS ====================================================================================================
                 elif menu == 0:
                   if g == 0 :
                     # PREVIEW
@@ -2421,7 +2478,7 @@ while True:
                     text(0,9,3,1,1,str(noise_filters[nr]),14,7)
                     save_config = 1
                     
-# MENU 1 ====================================================================================================
+# MENU 1 CAMERA 1 SETTINGS 1====================================================================================================
 
                 elif menu == 1:    
                   if g == 0 :
@@ -2581,7 +2638,7 @@ while True:
                     text(0,8,3,1,1,str(sharpness),14,7)
                     save_config = 1
 
-                  elif g == 9:
+                  elif g == 9 and Pi_Cam != 11:
                     # SATURATION
                     if (h == 1 and event.button == 1) or event.button == 4:
                         saturation +=1
@@ -2594,7 +2651,7 @@ while True:
                     save_config = 1
 
                    
-# MENU 2 ====================================================================================================
+# MENU 2 CAMERA 1 SETTINGS 2====================================================================================================
                 elif menu == 2:
                   if g == 0 :
                     # IR FILTER SWITCH MODE
@@ -2829,7 +2886,7 @@ while True:
                             
                   # g == 3 USED FOR FOCUS VALUE
                 
-                  elif g == 6 :
+                  elif g == 6  and Pi_Cam != 11:
                     # AWB setting
                     if (h == 1 and event.button == 1) or event.button == 4:
                         awb +=1
@@ -2862,7 +2919,7 @@ while True:
                         text(0,8,0,1,1,str(blue)[0:3],14,7)
                     save_config = 1
                     
-                  elif g == 7  and awb == 6:
+                  elif g == 7  and awb == 6 and Pi_Cam != 11:
                     # RED
                     if h == 0 or event.button == 5:
                         red -=0.1
@@ -2875,7 +2932,7 @@ while True:
                     text(0,7,3,1,1,str(red)[0:3],14,7)
                     save_config = 1
                     
-                  elif g == 8   and awb == 6:
+                  elif g == 8   and awb == 6 and Pi_Cam != 11:
                     # BLUE
                     if h == 0 or event.button == 5:
                         blue -=0.1
@@ -2907,7 +2964,7 @@ while True:
                     save_config = 1
 
                     
-# MENU 3 ====================================================================================================
+# MENU 3 VIDEO SETTINGS ====================================================================================================
                 elif menu == 3:    
                   if g == 0:
                     # INTERVAL
@@ -3134,12 +3191,12 @@ while True:
                         pygame.image.save(nmask,h_user + '/CMask.bmp')
                         mask,change = MaskChange()
                         
-# MENU 4 ====================================================================================================
+# MENU 4 SHOW, DELETE ====================================================================================================
                 elif menu == 4:   
                   if g == 0  and show == 1 and (frames > 0):
                     # SHOW next STILL
                     menu_timer  = time.monotonic()
-                    Jpegs = glob.glob(vid_dir + '2*.jpg')
+                    Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                     Jpegs.sort()
                     if (h == 1 and event.button == 1) or event.button == 4:
                         q +=1
@@ -3170,7 +3227,7 @@ while True:
                     # DELETE A STILL
                     menu_timer  = time.monotonic()
                     try:
-                      Jpegs = glob.glob(vid_dir + '2*.jpg')
+                      Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                       Jpegs.sort()
                       fontObj = pygame.font.Font(None, 70)
                       msgSurfaceObj = fontObj.render("DELETING....", False, (255,0,0))
@@ -3181,7 +3238,7 @@ while True:
                       os.remove(Jpegs[q])
                     except:
                         pass
-                    Jpegs = glob.glob(vid_dir + '2*.jpg')
+                    Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                     frames = len(Jpegs)
                     Jpegs.sort()
                     if q > len(Jpegs)-1:
@@ -3222,18 +3279,18 @@ while True:
 
                   elif g == 2  and show == 1 and frames > 0:
                     #Show MP4
-                    vids = glob.glob(vid_dir + '2*.mp4')
+                    vids = glob.glob(vid_dir + dtimestamp + '2*.mp4')
                     vids.sort()
                     jp = "1"
                     if len(Jpegs) > 0:
                         jpgs = Jpegs[q].split("/")
                         jp = jpgs[len(jpgs)-1][:-4]
                     stop = 0
-                    for x in range(len(vids)-2,-1,-1):
+                    x = len(vids)-1
+                    while stop == 0:
                         vide = vids[x].split("/")
                         vid = vide[len(vide)-1][:-4]
-                        if vid <= jp and stop == 0:
-                            stop = 1
+                        if vid <= jp:
                             text(0,2,3,0,1,"SHOWING",14,7)
                             text(0,2,3,1,1,"       ",14,7)
                             vhour = int(vid[6:8])
@@ -3246,13 +3303,17 @@ while True:
                             jtime = (jhour * 3600) + (jmins * 60) + jsecs
                             ttime = int((jtime - vtime)) - 2
                             ttime = max(ttime,0)
-                            datastr = "vlc " + "--start-time=" + str(ttime) + " " + vid_dir + vid + '.mp4'
-                            p = subprocess.Popen(datastr, shell=True, preexec_fn=os.setsid)
-                            if stop == 1:
+                            if x != len(vids)-1: # playing video if not current being recorded
+                                datastr = "vlc " + "--start-time=" + str(ttime) + " " + vid_dir + dtimestamp + vid + '.mp4'
+                                p = subprocess.Popen(datastr, shell=True, preexec_fn=os.setsid)
                                 poll = p.poll()
                                 while poll == None:
                                     poll = p.poll()
                                     time.sleep(0.1)
+                            stop = 1
+                        x -=1
+                        if x < 0:
+                            stop = 1
                         text(0,2,2,0,1,"SHOW THE",14,7)
                         text(0,2,2,1,1,"VIDEO ",14,7)
 
@@ -3261,7 +3322,7 @@ while True:
                     menu_timer  = time.monotonic()
                     if event.button == 3:
                         try:
-                            vids = glob.glob(vid_dir + '2*.mp4')
+                            vids = glob.glob(vid_dir + dtimestamp + '2*.mp4')
                             vids.sort()
                             jpgs = Jpegs[q].split("/")
                             jp = jpgs[len(jpgs)-1][:-4]
@@ -3270,7 +3331,7 @@ while True:
                                 vide = vids[x].split("/")
                                 vid = vide[len(vide)-1][:-4]
                                 if vid <= jp and stop == 0:
-                                    os.remove(vid_dir + vid + ".mp4")
+                                    os.remove(vid_dir + dtimestamp + vid + ".mp4")
                                     stop = 1
                         except:
                             pass
@@ -3279,7 +3340,7 @@ while True:
                   elif g == 4 and store != 2:
                     #move A MP4 Video and Jpeg to usb
                     menu_timer  = time.monotonic()
-                    vids = glob.glob(vid_dir + '2*.mp4')
+                    vids = glob.glob(vid_dir + dtimestamp + '2*.mp4')
                     vids.sort()
                     USB_Files  = []
                     USB_Files  = (os.listdir(m_user))
@@ -3307,8 +3368,8 @@ while True:
                                 if os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/" + jp + ".jpg"):
                                     os.remove(Jpegs[q])
                             stop = 1
-                        Videos = glob.glob(vid_dir + '*.mp4')
-                        Jpegs = glob.glob(vid_dir + '*.jpg')
+                        Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
+                        Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
                         frames = len(Jpegs)
                         text(0,4,2,0,1,"MOVE A MP4",14,7)
                         text(0,4,2,1,1,"to USB",14,7)
@@ -3317,9 +3378,9 @@ while True:
                   elif g == 5 and store != 2:
                     #move ALL MP4 Videos and Jpegs to usb
                     menu_timer  = time.monotonic()
-                    Videos = glob.glob(vid_dir + '*.mp4')
+                    Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
                     Videos.sort()
-                    Jpegs = glob.glob(vid_dir + '*.jpg')
+                    Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
                     Jpegs.sort()
                     USB_Files  = []
                     USB_Files  = (os.listdir(m_user))
@@ -3329,7 +3390,7 @@ while True:
                             os.system('mkdir ' + m_user + "/'" + USB_Files[0] + "'/Videos/")
                         text(0,5,3,0,1,"MOVING",14,7)
                         text(0,5,3,1,1,"MP4s",14,7)
-                        Videos = glob.glob(vid_dir + '*.mp4')
+                        Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
                         Videos.sort()
                         for xx in range(0,len(Videos) - 1):
                             movi = Videos[xx].split("/")
@@ -3345,8 +3406,8 @@ while True:
                             shutil.copy(Jpegs[xx],m_user + "/" + USB_Files[0] + "/Videos/")
                             if os.path.exists(m_user + "/" + USB_Files[0] + "/Videos/" + movi[4]):
                                 os.remove(Jpegs[xx])
-                        Videos = glob.glob(vid_dir + '*.h264')
-                        Jpegs = glob.glob(vid_dir + '*.jpg')
+                        Videos = glob.glob(vid_dir + dtimestamp + '*.h264')
+                        Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
                         frames = len(Jpegs)
                         text(0,5,2,0,1,"MOVE MP4s",14,7)
                         text(0,5,2,1,1,"to USB",14,7)
@@ -3370,11 +3431,11 @@ while True:
                         windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
                         pygame.display.update()
                         try:
-                            Jpegs = glob.glob(vid_dir + '2*.jpg')
+                            Jpegs = glob.glob(vid_dir + dtimestamp + '2*.jpg')
                             Jpegs.sort()
                             for xx in range(0,len(Jpegs)):
                                 os.remove(Jpegs[xx])
-                            Videos = glob.glob(vid_dir + '2???????????.mp4')
+                            Videos = glob.glob(vid_dir + dtimestamp + '2???????????.mp4')
                             Videos.sort()
                             for xx in range(0,len(Videos)-1):
                                 os.remove(Videos[xx])
@@ -3389,12 +3450,74 @@ while True:
                         show = 0
                         oldimg = []
 
+                  elif g == 7:
+                    #DELETE MP4 Videos and Jpegs with NO CAPTURE
+                    menu_timer  = time.monotonic()
+                    vids = glob.glob(vid_dir + dtimestamp + '2*.mp4')
+                    vids.sort()
+                    print(len(vids))
+                    Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
+                    Jpegs.sort()
+                    vds = []
+                    jps = []
+                    if len(vids) > 0 and len(Jpegs) > 0:
+                        pause_thread = True
+                        for y in range(len(Jpegs)-1,-1,-1):
+                            jpgs = Jpegs[y].split("/")
+                            jp = jpgs[len(jpgs)-1][:-4]
+                            x = len(vids)-1
+                            stop = 0
+                            while x > -1 and stop == 0:
+                                vide = vids[x].split("/")
+                                vid = vide[len(vide)-1][:-4]
+                                if vid <= jp:
+                                    vds.append(vids[x])
+                                    jps.append(Jpegs[y])
+                                    stop = 1
+                                x -=1
+                    print(vds)
+                    print(jps)
+                    if len(vids) > 0:
+                        for v in range(0,len(vids)):
+                            if os.path.exists(vids[v]):
+                                if vids[v] not in vds:
+                                    os.remove(vids[v])
+                    Videos = glob.glob(vid_dir + dtimestamp + '*.mp4')
+                    print(len(Videos))
+                    Jpegs = glob.glob(vid_dir + dtimestamp + '*.jpg')
+                    frames = len(Jpegs)
+                    pause_thread = False
 
+                  elif g == 9:
+                      # SHOW CAMERA
+                      show_vid +=1
+                      if show_vid > 1:
+                          show_vid = 0
+                      old_show_vid = show_vid
+                      if show_vid == 0:
+                          text(0,9,3,1,1,"OFF",14,7)
+                      else:
+                          text(0,9,3,1,1,"ON",14,7)
+                          if len(Jpegs) > 0:
+                            image = pygame.image.load(Jpegs[q])
+                            cropped = pygame.transform.scale(image, (pre_width,pre_height))
+                            windowSurfaceObj.blit(cropped, (0, 0))
+                            fontObj = pygame.font.Font(None, 35)
+                            msgSurfaceObj = fontObj.render(str(Jpegs[q]), False, (255,255,0))
+                            msgRectobj = msgSurfaceObj.get_rect()
+                            msgRectobj.topleft = (10,10)
+                            windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
+                            msgSurfaceObj = fontObj.render((str(q+1) + "/" + str(frames)), False, (255,0,0))
+                            msgRectobj = msgSurfaceObj.get_rect()
+                            msgRectobj.topleft = (10,35)
+                            windowSurfaceObj.blit(msgSurfaceObj, msgRectobj)
+                            pygame.draw.rect(windowSurfaceObj,(0,0,0),Rect(0,pre_height,scr_width-bw,scr_height))
+                            pygame.display.update()
+                            text(0,0,3,1,1,str(q+1) + " / " + str(frames),14,7)
+                      save_config = 1                    
 
                     
-                  
-                    
-# MENU 5 ====================================================================================================
+# MENU 5 OTHER SETTINGS ====================================================================================================
                 elif menu == 5:                
 
                   if g == 3  :
@@ -3484,7 +3607,7 @@ while True:
                     text(0,9,3,1,1,str(sd_hour) + ":00",14,7)
                     save_config = 1
                     
-# MENU 6 ====================================================================================================
+# MENU 6 CAMERA 2 SETTINGS 1 ====================================================================================================
                 elif menu == 6:    
                   if g == 0 :
                     # FPS1
@@ -3643,7 +3766,7 @@ while True:
                     text(0,8,3,1,1,str(sharpness1),14,7)
                     save_config = 1
 
-                  elif g == 9:
+                  elif g == 9 and Pi_Cam != 11:
                     # SATURATION1
                     if (h == 1 and event.button == 1) or event.button == 4:
                         saturation1 +=1
@@ -3657,7 +3780,7 @@ while True:
 
 
                     
-# MENU 7 ====================================================================================================
+# MENU 7 CAMERA 2 SETTINGS 2====================================================================================================
                 elif menu == 7:
                   if g == 0:
                     # IR FILTER switch MODE
@@ -3892,7 +4015,7 @@ while True:
                             
                   # g == 3 USED FOR FOCUS VALUE
                 
-                  elif g == 6:
+                  elif g == 6 and Pi_Cam != 11:
                     # AWB1 setting
                     if (h == 1 and event.button == 1) or event.button == 4:
                         awb1 +=1
@@ -3925,7 +4048,7 @@ while True:
                         text(0,8,0,1,1,str(blue1)[0:3],14,7)
                     save_config = 1
                     
-                  elif g == 7 and awb1 == 6:
+                  elif g == 7 and awb1 == 6 and Pi_Cam != 11:
                     # RED1
                     if h == 0 or event.button == 5:
                         red1 -=0.1
@@ -3938,7 +4061,7 @@ while True:
                     text(0,7,3,1,1,str(red1)[0:3],14,7)
                     save_config = 1
                     
-                  elif g == 8 and awb1 == 6:
+                  elif g == 8 and awb1 == 6 and Pi_Cam != 11:
                     # BLUE1
                     if h == 0 or event.button == 5:
                         blue1 -=0.1
