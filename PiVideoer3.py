@@ -482,14 +482,14 @@ def suntimes():
         on_time = (on_hour * 60) + on_mins
         of_time = (of_hour * 60) + of_mins
         
-        if menu == 3 and cam2 != "2":
+        if menu == 3 and cam2 != "1":
             if camera_sw == 0:
                 text(0,5,1,0,1,"SW 2>1 time",14,7)
                 text(0,6,1,0,1,"SW 1>2 time",14,7)
             else:
                 text(0,5,1,0,1,"SW 2>1 time",14,7)
                 text(0,6,1,0,1,"SW 1>2 time",14,7)
-            if synced == 1 and cam2 != "2":
+            if synced == 1 and cam2 != "1":
                 if on_mins > 9:
                     text(0,5,2,1,1,str(on_hour) + ":" + str(on_mins),14,7)
                 else:
@@ -499,7 +499,7 @@ def suntimes():
                     text(0,5,0,1,1,str(on_hour) + ":" + str(on_mins),14,7)
                 else:
                     text(0,5,0,1,1,str(on_hour) + ":0" + str(on_mins),14,7)
-            if synced == 1 and cam2 != "2":
+            if synced == 1 and cam2 != "1":
                 if of_mins > 9:
                     text(0,6,2,1,1,str(of_hour) + ":" + str(of_mins),14,7)
                 else:
@@ -993,12 +993,12 @@ def main_menu():
     text(0,1,6,0,1,"RECORD",16,3)
     text(0,2,1,0,1,"DETECTION",14,7)
     text(0,2,1,1,1,"Settings",14,7)
-    if cam2 != "2":
+    if cam2 != "1":
         text(0,3,1,0,1,"CAMERA 1",14,7)
     else:
         text(0,3,1,0,1,"CAMERA ",14,7)
     text(0,3,1,1,1,"Settings 1",14,7)
-    if cam2 != "2":
+    if cam2 != "1":
         text(0,4,1,0,1,"CAMERA 1",14,7)
     else:
         text(0,4,1,0,1,"CAMERA ",14,7)
@@ -1009,7 +1009,7 @@ def main_menu():
     text(0,7,1,1,1,"Settings ",14,7)
     text(0,6,1,0,1,"SHOW or",13,7)
     text(0,6,1,1,1,"DELETE",13,7)
-    if Pi == 5 and cam2 != "2":
+    if Pi == 5 and cam2 != "1":
         text(0,8,1,0,1,"CAMERA 2",14,7)
         text(0,8,1,1,1,"Settings 1",14,7)
         text(0,9,1,0,1,"CAMERA 2",14,7)
@@ -1150,7 +1150,7 @@ while True:
         suntimes()
             
         # switch cameras if switch time reached and clocked synced
-        if camera_sw <= 1 and cam2 != "2": # AUTO (Sun) or SET TIMES - switch cameras on set times
+        if camera_sw <= 1 and cam2 != "1": # AUTO (Sun) or SET TIMES - switch cameras on set times
           if synced == 1 and on_time < of_time:
               if ((hour* 60) + mins >= on_time and (hour* 60) + mins < of_time) and camera == 1:
                   camera = 0
@@ -2016,7 +2016,7 @@ while True:
                         text(0,2,3,1,1,rectxt,14,7)
                         text(0,0,2,0,1,"Interval S",14,7)
                         text(0,0,3,1,1,str(interval),14,7)
-                        if cam2 != "2":
+                        if cam2 != "1":
                             if camera_sw == 0:
                                 clr = 2
                                 text(0,5,1,0,1,"SW 2>1 time",14,7)
@@ -2025,7 +2025,7 @@ while True:
                                 clr = 3
                                 text(0,5,1,0,1,"SW 2>1 time",14,7)
                                 text(0,6,1,0,1,"SW 1>2 time",14,7)
-                            if synced == 1 and cam2 != "2":
+                            if synced == 1 and cam2 != "1":
                                 if on_mins > 9:
                                     text(0,5,clr,1,1,str(on_hour) + ":" + str(on_mins),14,7)
                                 else:
@@ -2035,7 +2035,7 @@ while True:
                                     text(0,5,0,1,1,str(on_hour) + ":" + str(on_mins),14,7)
                                 else:
                                     text(0,5,0,1,1,str(on_hour) + ":0" + str(on_mins),14,7)
-                            if synced == 1 and cam2 != "2":
+                            if synced == 1 and cam2 != "1":
                                 if of_mins > 9:
                                     text(0,6,clr,1,1,str(of_hour) + ":" + str(of_mins),14,7)
                                 else:
@@ -2163,7 +2163,7 @@ while True:
                             USB_storage = ((1 - (usedusb.f_bavail / usedusb.f_blocks)) * 100)
                         text(0,10,1,0,1,"MAIN MENU",14,7)
 
-                    elif g == 8 and cam2 != "2":
+                    elif g == 8 and cam2 != "1":
                         # camera 2 settings 1
                         menu = 6
                         menu_timer  = time.monotonic()
@@ -2223,7 +2223,7 @@ while True:
                         text(0,10,1,0,1,"MAIN MENU",14,7)
                         set_parameters1()
 
-                    elif g == 9 and cam2 != "2":
+                    elif g == 9 and cam2 != "1":
                         # camera 2 settings 2
                         menu = 7
                         menu_timer  = time.monotonic()
@@ -2262,7 +2262,7 @@ while True:
                                 clr = 2
                             else:
                                 clr = 3
-                            if synced == 1 and cam2 != "2":
+                            if synced == 1 and cam2 != "1":
                                 if ir_on_mins > 9:
                                     text(0,1,clr,1,1,str(ir_on_hour) + ":" + str(ir_on_mins),14,7)
                                 else:
@@ -2278,7 +2278,7 @@ while True:
                                 text(0,2,1,0,1,"IRF OFF time",14,7)
                             else:
                                 text(0,2,1,0,1,"Light ON time",14,7)
-                            if synced == 1 and cam2 != "2":
+                            if synced == 1 and cam2 != "1":
                                 if ir_of_mins > 9:
                                     text(0,2,clr,1,1,str(ir_of_hour) + ":" + str(ir_of_mins),14,7)
                                 else:
@@ -3022,7 +3022,7 @@ while True:
                         text(0,3,2,0,1,"Zoom",14,7)
                         preview = 0
 
-                  elif g == 4  and Pi == 5 and cam2 != "2":
+                  elif g == 4  and Pi == 5 and cam2 != "1":
                     # SWITCH CAMERA MODE
                     if (h == 1 and event.button == 1) or event.button == 4:
                         camera_sw +=1
@@ -3059,7 +3059,7 @@ while True:
                             set_parameters1()
                     if camera_sw == 0:
                       suntimes()
-                      if synced == 1 and cam2 != "2":
+                      if synced == 1 and cam2 != "1":
                         if on_mins > 9:
                             text(0,5,clr,1,1,str(on_hour) + ":" + str(on_mins),14,7)
                         else:
@@ -3069,7 +3069,7 @@ while True:
                             text(0,5,0,1,1,str(on_hour) + ":" + str(on_mins),14,7)
                         else:
                             text(0,5,0,1,1,str(on_hour) + ":0" + str(on_mins),14,7)
-                      if synced == 1 and cam2 != "2":
+                      if synced == 1 and cam2 != "1":
                         if of_mins > 9:
                             text(0,6,clr,1,1,str(of_hour) + ":" + str(of_mins),14,7)
                         else:
