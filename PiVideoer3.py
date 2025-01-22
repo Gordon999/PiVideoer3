@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.08"
+version = "1.10"
 
 import time
 import cv2
@@ -552,33 +552,33 @@ def Camera_Version():
         line = file.readline()
   max_camera = 0
   same_cams  = 0
-  cam1 = "1"
-  cam2 = "2"
+  cam1     = "0"
+  cam2     = "1"
   vwidths  = []
   vheights = []
-  cwidth = scr_width - bw
-  cheight = scr_height
+  cwidth   = scr_width - bw
+  cheight  = scr_height
   for x in range(0,len(camstxt)):
     # Determine if both cameras are the same model
     if camstxt[x][0:4] == "0 : ":
         cam1 = camstxt[x][4:10]
     elif camstxt[x][0:4] == "1 : ":
         cam2 = camstxt[x][4:10]
-    elif cam1 != "1" and cam2 == "2" and camera == 0:
+    if cam1 != "0" and cam2 == "1" and camera == 0:
         forms = camstxt[x].split(" ")
         for q in range(0,len(forms)):
-           if "x" in forms[q] and "/" not in forms[q]:
+           if "x" in forms[q] and "/" not in forms[q] and "m" not in forms[q] and "[" not in forms[q]:
               qwidth,qheight = forms[q].split("x")
               vwidths.append(int(qwidth))
               vheights.append(int(qheight))
-    elif cam1 != "1" and cam2 != "2" and camera == 1:
+    elif cam1 != "0" and cam2 != "1" and camera == 1:
         forms = camstxt[x].split(" ")
         for q in range(0,len(forms)):
-           if "x" in forms[q] and "/" not in forms[q]:
+           if "x" in forms[q] and "/" not in forms[q] and "m" not in forms[q] and "[" not in forms[q]:
               qwidth,qheight = forms[q].split("x")
               vwidths.append(int(qwidth))
               vheights.append(int(qheight))
-   
+  
     # Determine MAXIMUM number of cameras available 
     if camstxt[x][0:4]   == "3 : " and max_camera < 3:
         max_camera = 3
@@ -586,7 +586,10 @@ def Camera_Version():
         max_camera = 2
     elif camstxt[x][0:4] == "1 : " and max_camera < 1:
         max_camera = 1
-        
+
+  swidths[0]  = vwidths[-1]
+  sheights[0] = vheights[-1]
+ 
   if max_camera == 1 and cam1 == cam2:
       same_cams = 1
   Pi_Cam = -1
@@ -598,19 +601,25 @@ def Camera_Version():
         if cam2 == camids[x]:
             Pi_Cam = x
   max_gain = max_gains[Pi_Cam]
-  if Pi_Cam == 7:
-      vid_width  = 1456
-      vid_height = 1088
-  elif Pi_Cam == 11:
-      vid_width  = 1280
-      vid_height = 800
-
   if a > pre_width - v_crop:
       a = int(pre_width/2)
   if b > pre_height - h_crop:
       b = int(pre_height/2)
   swidth = swidths[Pi_Cam]
   sheight = sheights[Pi_Cam]
+  # set video size
+  if swidth < 1920:
+      vid_width  = swidth
+      vid_height = sheight
+      # set lores size
+      lores_width  = swidth
+      lores_height = sheight
+  else:
+      vid_width  = 1920
+      vid_height = 1080
+      # set lores size
+      lores_width  = 1280
+      lores_height = 960
 
   if Pi_Cam != -1:
       print("Camera:",cameras[Pi_Cam])
@@ -1693,7 +1702,7 @@ while True:
                     nmask = pygame.transform.flip(nmask, True, False)
                     pygame.image.save(nmask,h_user + '/CMask.bmp')
                  
-            # set AF camera autofocus position 
+            # set AF camera SPOT autofocus position 
             if mousex < pre_width and zoom == 0  and (Pi_Cam == 3 or Pi_Cam == 8 or Pi_Cam == 5 or Pi_Cam == 6) and AF_f_mode > 0 and event.button != 3 and (menu == 2 or menu == 7):
                 a = mousex
                 b = mousey
