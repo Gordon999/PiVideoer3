@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.11"
+version = "1.12"
 
 import time
 import cv2
@@ -35,6 +35,7 @@ from gpiozero import Button
 from gpiozero import LED
 from gpiozero import CPUTemperature
 from gpiozero import PWMLED
+from gpiozero import PWMOutputDevice
 import sys
 import random
 from picamera2 import Picamera2, Preview, MappedArray
@@ -107,9 +108,12 @@ use_gpio   = 1
 s_focus    = 20
 s_trig     = 21
 
-# ext trigger input gpios (if use_gpio = 1)
-e_trig1    = 12
-e_trig2    = 16
+# ext trigger input gpio (if use_gpio = 1)
+e_trig1    = 16
+
+# buzzer gpio (if use_gpio = 1)
+e_buzz     = 12
+use_buzz   = 0  # enable buzzer on capture *
 
 # Waveshare IR filter switch output (if use_gpio = 1)
 sw_ir      = 26 # camera 1
@@ -206,7 +210,7 @@ camera_sw     = 2       # camera switch mode *
 # * adjustable whilst running
 
 # initialise parameters
-config_file   = "PiVideoconfig301.txt"
+config_file   = "PiVideoconfig302.txt"
 old_camera    = camera
 old_camera_sw = camera_sw
 synced        = 0
@@ -307,9 +311,11 @@ if use_gpio == 1:
     if fan_ctrl == 1:
         led_fan = PWMLED(fan)
         led_fan.value = 0
-    # external input triggers
+    # external input trigger
     button_e_trig1 = Button(e_trig1,pull_up=False)
-    button_e_trig2 = Button(e_trig2,pull_up=False)
+    # optional buzzer
+    buzzer=PWMOutputDevice(e_buzz, initial_value=0,frequency=4000)
+
 
 # check Vid_configXX.txt exists, if not then write default values
 if not os.path.exists(config_file):
@@ -318,7 +324,7 @@ if not os.path.exists(config_file):
               check_time,sd_hour,vformat,threshold2,col_filter,nr,auto_time,ram_limit,mp4_fps,vid_anno,Mem_F_Act,dspeed,IRF,camera,
               mode1,speed1,gain1,brightness1,contrast1,awb1,int(red1*10),int(blue1*10),meter1,ev1,denoise1,quality1,sharpness1,saturation1,
               fps1,AF_f_mode1,AF_focus1,AF_f_mode,AF_focus,IRF1,on_hour,of_hour,on_mins,of_mins,ir_on_hour,ir_of_hour,ir_on_mins,ir_of_mins,
-              camera_sw,rec_stop]
+              camera_sw,rec_stop,use_buzz]
     with open(config_file, 'w') as f:
         for item in defaults:
             f.write("%s\n" % item)
@@ -404,6 +410,7 @@ ir_on_mins  = config[69]
 ir_of_mins  = config[70]
 camera_sw   = config[71]
 rec_stop    = config[72]
+use_buzz    = config[73]
 
 
 on_time    = (on_hour * 60) + on_mins
@@ -1377,7 +1384,7 @@ while True:
 
             # external input triggers to RECORD
             if use_gpio == 1:
-                if button_e_trig1.is_pressed or button_e_trig2.is_pressed:
+                if button_e_trig1.is_pressed:
                     record = 1
                 
             # detection of motion
@@ -1396,6 +1403,9 @@ while True:
                     print("New Motion", timestamp)
                     image3 = cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
                     cv2.imwrite(vid_dir + dtimestamp + timestamp + ".jpg" , image3)
+                    # sound buzzer
+                    if use_gpio == 1 and use_buzz == 1:
+                        buzzer.value = 0.1
                     # trigger external camera
                     if ES > 0 and use_gpio == 1: 
                         led_s_focus.on()
@@ -1423,6 +1433,8 @@ while True:
                         button(0,0,5)
                         text(0,0,6,0,1,"CAPTURE",16,2)
                         text(0,0,3,1,1,str(frames),14,2)
+                    if use_gpio == 1:
+                        buzzer.value = 0   
                 else:
                     if Capture == 1 and menu == -1:
                         text(0,0,3,1,1,str(interval - (int(time.monotonic() - timer10))),15,0)
@@ -2049,6 +2061,8 @@ while True:
                         text(0,7,3,1,1,str(m_alpha),14,7)
                         text(0,8,2,0,1,"CLEAR Mask",14,7)
                         text(0,8,3,1,1," 0       1  ",14,7)
+                        text(0,9,2,0,1,"BUZZER",14,7)
+                        text(0,9,3,1,1,str(use_buzz),14,7)
                         text(0,10,1,0,1,"MAIN MENU",14,7)                        
 
                     elif g == 6:
@@ -3200,6 +3214,17 @@ while True:
                         pygame.image.save(nmask,h_user + '/CMask.bmp')
                         mask,change = MaskChange()
                         
+                  elif g == 9:
+                    # BUZZER
+                    if (h == 1 and event.button == 1) or event.button == 4:
+                        use_buzz +=1
+                        use_buzz = min(use_buzz,1)
+                    else:
+                        use_buzz -=1
+                        use_buzz = max(use_buzz,0)
+                    text(0,9,3,1,1,str(use_buzz),14,7)
+                    save_config = 1
+                        
 # MENU 4 SHOW, DELETE ====================================================================================================
                 elif menu == 4:   
                   if g == 0  and show == 1 and (frames > 0):
@@ -4176,6 +4201,7 @@ while True:
                 config[70] = ir_of_mins
                 config[71] = camera_sw
                 config[72] = rec_stop
+                config[73] = use_buzz
 
               
                 with open(config_file, 'w') as f:
