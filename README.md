@@ -41,6 +41,8 @@ Can control focus on a pi v3camera, auto, continuous,  manual or spot. For spot 
 
 MP4s and jpegs captured in /home/《user》/Videos. 
 
+This is the optional buzzer it is setup for : Piezo Transducer - Mini 5V Buzzer (4000Hz) - The Pi Hut https://share.google/gzdvGth50wYb5F7w1
+
 To install:
 
 Install latest FULL RaspiOS based on Bookworm (tested with FULL 32bit and 64bit versions)
