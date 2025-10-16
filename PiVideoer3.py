@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.12"
+version = "1.13"
 
 import time
 import cv2
@@ -293,7 +293,9 @@ with open("/run/shm/md.txt", "r") as file:
            if line[0:5] == "Model":
                model = line
 mod = model.split(" ")
-if mod[3] == "5":
+if mod[3] == "Compute":
+    Pi = int(mod[5][0:1])
+elif mod[3] == "5":
     Pi = 5
 
 # setup gpio if enabled
