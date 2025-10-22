@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.16"
+version = "1.18"
 
 import time
 import cv2
@@ -1011,7 +1011,10 @@ def main_menu():
     else:
         text(0,4,1,0,1,"CAMERA ",14,7)
     text(0,4,1,1,1,"Settings 2",14,7)
-    text(0,5,1,0,1,"VIDEO",14,7)
+    if Pi == 5 and cam2 != "1":
+        text(0,5,1,0,1,"VIDEO & SW",14,7)
+    else:
+        text(0,5,1,0,1,"VIDEO     ",14,7)
     text(0,5,1,1,1,"Settings",14,7)
     text(0,7,1,0,1,"OTHER",14,7)
     text(0,7,1,1,1,"Settings ",14,7)
@@ -3100,15 +3103,22 @@ while True:
                     
                   elif g == 5 and camera_sw == 1:
                     # SWITCH to CAMERA 2 HOUR
-                    if h == 1 and event.button == 3:
+                    if (h == 1 and event.button == 3) or (h == 0 and event.button == 4):
                         on_hour +=1
                         if on_hour > 23:
                             on_hour = 0
-                    elif h == 0 and event.button == 3:
+                    elif (h == 0 and event.button == 3)  or (h == 0 and event.button == 5):
                         on_hour -=1
                         if on_hour < 0:
                             on_hour = 23
-                    elif h == 1:
+                    elif h == 1 and event.button == 5:
+                        on_mins -=1
+                        if on_mins  < 0:
+                            on_hour -= 1
+                            on_mins = 59
+                            if on_hour < 0:
+                                on_hour = 23
+                    elif h == 1 or (h == 1 and event.button == 4):
                         on_mins +=1
                         if on_mins > 59:
                             on_mins = 0
@@ -3145,24 +3155,32 @@ while True:
 
                   elif g == 6 and camera_sw == 1:
                     # SWITCH to CAMERA 1 HOUR
-                    if h == 1 and event.button == 3:
+                    if (h == 1 and event.button == 3) or (h == 0 and event.button == 4):
                         of_hour +=1
                         if of_hour > 23:
                             of_hour = 0
 
-                    elif h == 0 and event.button == 3:
+                    elif (h == 0 and event.button == 3) or (h == 0 and event.button == 5):
                         of_hour -=1
                         if of_hour < 0:
                             of_hour = 23
                             
-                    elif h == 1:
+                    elif h == 1 and event.button == 5:
+                        of_mins -=1
+                        if of_mins  < 0:
+                            of_hour -= 1
+                            of_mins = 59
+                            if of_hour < 0:
+                                of_hour = 23
+                            
+                    elif h == 1 or (h == 1 and event.button == 4):
                         of_mins +=1
                         if of_mins > 59:
                             of_mins = 0
                             of_hour += 1
                             if of_hour > 23:
                                 of_hour = 0
-                    elif h == 0:
+                    elif h == 0 :
                         of_mins -=1
                         if of_mins  < 0:
                             of_hour -= 1
@@ -3904,6 +3922,7 @@ while True:
                         if ir_on_hour < 0:
                             ir_on_hour = 23
                             
+                                              
                     elif h == 1:
                         ir_on_mins +=1
                         if ir_on_mins > 59:
