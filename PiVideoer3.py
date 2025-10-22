@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.13"
+version = "1.15"
 
 import time
 import cv2
@@ -51,7 +51,7 @@ import subprocess
 # set Memory Store, 0 = RAM, 1 = SD CARD, 2 = USB drive
 store = 1  
 
-# To save in a daily directory, eg /Video/250112/, set daily = True
+# To save in a daily directory, eg ~/Video/250112/, set daily = True
 daily = True
 
 # Your Location
@@ -101,7 +101,6 @@ else:
     vid_dir = h_user + "/Videos/"
 
 # use GPIO for external camera triggers, IR switch and/or optional FAN (NOT Pi5 Active Cooler / Case Fan).
-# DISABLE Pi FAN CONTROL in Preferences > Performance to GPIO 14 !!
 use_gpio   = 1
 
 # ext camera trigger output gpios (if use_gpio = 1)
@@ -119,7 +118,7 @@ use_buzz   = 0  # enable buzzer on capture *
 sw_ir      = 26 # camera 1
 sw_ir1     = 19 # camera 2
 
-# IR light
+# IR light (if use_gpio = 1)
 ir_light   = 13
 
 # fan ctrl gpio (if use_gpio = 1) This is not the Pi5 active cooler !!
@@ -348,7 +347,7 @@ speed       = config[4]
 gain        = config[5]
 brightness  = config[6]
 contrast    = config[7]
-Mem_limit    = config[8]
+Mem_limit   = config[8]
 preview     = config[9]
 awb         = config[10]
 detection   = config[11]
@@ -493,11 +492,11 @@ def suntimes():
         
         if menu == 3 and cam2 != "1":
             if camera_sw == 0:
-                text(0,5,1,0,1,"SW 2>1 time",14,7)
-                text(0,6,1,0,1,"SW 1>2 time",14,7)
+                text(0,5,1,0,1,"SW 2 to 1 time",14,7)
+                text(0,6,1,0,1,"SW 1 to 2 time",14,7)
             else:
-                text(0,5,1,0,1,"SW 2>1 time",14,7)
-                text(0,6,1,0,1,"SW 1>2 time",14,7)
+                text(0,5,1,0,1,"SW 2 to 1 time",14,7)
+                text(0,6,1,0,1,"SW 1 to 2 time",14,7)
             if synced == 1 and cam2 != "1":
                 if on_mins > 9:
                     text(0,5,2,1,1,str(on_hour) + ":" + str(on_mins),14,7)
@@ -651,7 +650,7 @@ def Camera_Version():
       pygame.display.quit()
       sys.exit()
       
-  pygame.display.set_caption('PiVideoer3  Camera: ' + cameras[Pi_Cam] + ' : ' + str(camera))
+  pygame.display.set_caption('PiVideoer3  Camera: ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
             
 Camera_Version()
 print(Pi_Cam,cam1,cam2)
@@ -922,7 +921,7 @@ if noframe == 0:
 else:
    windowSurfaceObj = pygame.display.set_mode((scr_width,scr_height), pygame.NOFRAME, 24)
    
-pygame.display.set_caption('PiVideoer3  Camera: ' + cameras[Pi_Cam] + ' : ' + str(camera))
+pygame.display.set_caption('PiVideoer3  Camera: ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
 
 global greyColor, redColor, greenColor, blueColor, dgryColor, lgryColor, blackColor, whiteColor, purpleColor, yellowColor
 bredColor =   pygame.Color(255,   0,   0)
@@ -999,7 +998,7 @@ def main_menu():
         button(0,0,4)
         text(0,0,6,0,1,"CAPTURE",16,4)
         text(0,0,3,1,1,vf,14,4)
-    text(0,1,6,0,1,"RECORD",16,3)
+    text(0,1,6,0,1,"Capture Still",16,3)
     text(0,2,1,0,1,"DETECTION",14,7)
     text(0,2,1,1,1,"Settings",14,7)
     if cam2 != "1":
@@ -1173,7 +1172,7 @@ while True:
                       text(0,4,3,1,1,str(camera_sws[camera_sw]),14,7)
                   print("Camera: " + str(camera + 1))
                   Camera_Version()
-                  pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                  pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                   picam2.close()
                   picam2.stop()
                   start_camera()
@@ -1191,7 +1190,7 @@ while True:
                       text(0,4,3,1,1,str(camera_sws[camera_sw]),14,7)
                   print("Camera: " + str(camera + 1))
                   Camera_Version()
-                  pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                  pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                   picam2.close()
                   picam2.stop()
                   start_camera()
@@ -1213,7 +1212,7 @@ while True:
                     led_ir_light.off()
                     if menu == 2 or menu == 7:
                         if rec_stop == 1:
-                            text(0,0,1,0,1,"RECORD",14,7)
+                            text(0,0,1,0,1,"Capture Still",14,7)
                         elif Pi_Cam == 9:
                             text(0,0,1,0,1,"IR Filter",14,7)
                         else:
@@ -1230,7 +1229,7 @@ while True:
                         stop_rec = 1
                         if menu == 2 or menu == 7:
                             if rec_stop == 1:
-                                text(0,0,2,0,1,"RECORD",14,7)
+                                text(0,0,2,0,1,"Capture Still",14,7)
                             elif Pi_Cam == 9:
                                 text(0,0,2,0,1,"IR Filter",14,7)
                             else:
@@ -1243,7 +1242,7 @@ while True:
                         led_ir_light.on()
                         if menu == 2 or menu == 7:
                             if rec_stop == 1:
-                                text(0,0,2,0,1,"RECORD",14,7)
+                                text(0,0,2,0,1,"Capture Still",14,7)
                             elif Pi_Cam == 9:
                                 text(0,0,2,0,1,"IR Filter",14,7)
                             else:
@@ -1578,7 +1577,7 @@ while True:
             elif rec_stop == 0:
                 text(0,0,1,0,1,"Light",14,7)
             else:
-                text(0,0,1,0,1,"RECORD",14,7)
+                text(0,0,1,0,1,"Capture Still",14,7)
     # stop recording
     elif encoding == True and (time.monotonic() - start > v_length/1000 or stop_rec == 1):
         picam2.stop_recording()
@@ -1756,7 +1755,7 @@ while True:
                     if camera != old_camera:
                         camera = old_camera
                         Camera_Version()
-                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                         picam2.stop_recording()
                         picam2.close()
                         picam2.stop()
@@ -1798,10 +1797,10 @@ while True:
                         # RECORD
                         record = 1
                         button(0,1,1)
-                        text(0,1,3,0,1,"RECORD",16,0)
+                        text(0,1,3,0,1,"Capture Still",16,0)
                         time.sleep(0.5)
                         button(0,1,3)
-                        text(0,1,6,0,1,"RECORD",16,3)
+                        text(0,1,6,0,1,"Capture Still",16,3)
                         
                     elif g == 2 and event.button != 3:
                         # detection menu
@@ -1859,7 +1858,7 @@ while True:
                         old_camera = camera
                         camera = 0
                         Camera_Version()
-                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                         for d in range(0,10):
                             button(0,d,0)
                         text(0,7,5,0,1,"Meter",14,7)
@@ -1915,7 +1914,7 @@ while True:
                         old_camera = camera
                         camera = 0
                         Camera_Version()
-                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                         for d in range(0,10):
                             button(0,d,0)
                         if Pi_Cam == 3 or Pi_Cam == 8 or Pi_Cam == 5 or Pi_Cam == 6:
@@ -1971,7 +1970,7 @@ while True:
 
                             if IRF1 == 0:
                                 if rec_stop == 1:
-                                    text(0,0,2,0,1,"RECORD",14,7)
+                                    text(0,0,2,0,1,"Capture Still",14,7)
                                 elif cam1 == 'imx290':
                                     text(0,0,2,0,1,"IR Filter",14,7)
                                 else:
@@ -1979,7 +1978,7 @@ while True:
                                     
                             else:
                                 if rec_stop == 1:
-                                    text(0,0,1,0,1,"RECORD",14,7)
+                                    text(0,0,1,0,1,"Capture Still",14,7)
                                 elif cam1 == 'imx290':
                                     text(0,0,1,0,1,"IR Filter",14,7)
                                 else:
@@ -2033,12 +2032,12 @@ while True:
                         if cam2 != "1":
                             if camera_sw == 0:
                                 clr = 2
-                                text(0,5,1,0,1,"SW 2>1 time",14,7)
-                                text(0,6,1,0,1,"SW 1>2 time",14,7)
+                                text(0,5,1,0,1,"SW 2 to 1 time",14,7)
+                                text(0,6,1,0,1,"SW 1 to 2 time",14,7)
                             else:
                                 clr = 3
-                                text(0,5,1,0,1,"SW 2>1 time",14,7)
-                                text(0,6,1,0,1,"SW 1>2 time",14,7)
+                                text(0,5,1,0,1,"SW 2 to 1 time",14,7)
+                                text(0,6,1,0,1,"SW 1 to 2 time",14,7)
                             if synced == 1 and cam2 != "1":
                                 if on_mins > 9:
                                     text(0,5,clr,1,1,str(on_hour) + ":" + str(on_mins),14,7)
@@ -2194,7 +2193,7 @@ while True:
                         picam2.close()
                         picam2.stop()
                         start_camera()
-                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                         for d in range(0,10):
                             button(0,d,0)
                         text(0,0,5,0,1,"fps",14,7)
@@ -2252,7 +2251,7 @@ while True:
                         picam2.close()
                         picam2.stop()
                         start_camera()
-                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                         for d in range(0,10):
                             button(0,d,0)
                         if Pi_Cam == 3 or Pi_Cam == 8 or Pi_Cam == 5 or Pi_Cam == 6:
@@ -2306,14 +2305,14 @@ while True:
                                     text(0,2,0,1,1,str(ir_of_hour) + ":0" + str(ir_of_mins),14,7)
                             if IRF1 == 0:
                                 if rec_stop == 1:
-                                    text(0,0,2,0,1,"RECORD",14,7)
+                                    text(0,0,2,0,1,"Capture Still",14,7)
                                 elif cam2 == 'imx290':
                                     text(0,0,2,0,1,"IR Filter",14,7)
                                 else:
                                     text(0,0,2,0,1,"Light",14,7)
                             else:
                                 if rec_stop == 1:
-                                    text(0,0,1,0,1,"RECORD",14,7)
+                                    text(0,0,1,0,1,"Capture Still",14,7)
                                 elif cam2 == 'imx290':
                                     text(0,0,1,0,1,"IR Filter",14,7)
                                 else:
@@ -2699,7 +2698,7 @@ while True:
                             led_sw_ir1.off()
                             led_ir_light.on()
                         if rec_stop == 1:
-                            text(0,0,2,0,1,"RECORD",14,7)
+                            text(0,0,2,0,1,"Capture Still",14,7)
                         elif Pi_Cam == 9:
                             text(0,0,2,0,1,"IR Filter",14,7)
                         else:
@@ -2712,7 +2711,7 @@ while True:
                         led_sw_ir1.on()
                         led_ir_light.off()
                         if rec_stop == 1:
-                            text(0,0,1,0,1,"RECORD",14,7)
+                            text(0,0,1,0,1,"Capture Still",14,7)
                         elif Pi_Cam == 9:
                             text(0,0,1,0,1,"IR Filter",14,7)
                         else:
@@ -3059,8 +3058,8 @@ while True:
                         camera = 1
                         led_ir_light.on()
                         text(0,4,1,0,1,"Camera: " + str(camera + 1),14,7)
-                    text(0,5,1,0,1,"SW 2>1 time",14,7)
-                    text(0,6,1,0,1,"SW 1>2 time",14,7)
+                    text(0,5,1,0,1,"SW 2 to 1 time",14,7)
+                    text(0,6,1,0,1,"SW 1 to 2 time",14,7)
                     if camera_sw >= 2:
                         old_camera = camera
                         picam2.stop_recording()
@@ -3068,7 +3067,7 @@ while True:
                         picam2.stop()
                         Camera_Version()
                         start_camera()
-                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera))
+                        pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
                         if camera == 0:
                             set_parameters()
                         else:
@@ -3839,7 +3838,7 @@ while True:
                             led_sw_ir1.off()
                             led_ir_light.on()
                         if rec_stop == 1:
-                            text(0,0,2,0,1,"RECORD",14,7)
+                            text(0,0,2,0,1,"Capture Still",14,7)
                         elif Pi_Cam == 9:
                             text(0,0,2,0,1,"IR Filter",14,7)
                         else:
@@ -3850,7 +3849,7 @@ while True:
                         led_sw_ir1.on()
                         led_ir_light.off()
                         if rec_stop == 1:
-                            text(0,0,1,0,1,"RECORD",14,7)
+                            text(0,0,1,0,1,"Capture Still",14,7)
                         elif Pi_Cam == 9:
                             text(0,0,1,0,1,"IR Filter",14,7)
                         else:
