@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.15"
+version = "1.16"
 
 import time
 import cv2
@@ -1173,6 +1173,7 @@ while True:
                   print("Camera: " + str(camera + 1))
                   Camera_Version()
                   pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
+                  picam2.stop_recording()
                   picam2.close()
                   picam2.stop()
                   start_camera()
@@ -1191,6 +1192,7 @@ while True:
                   print("Camera: " + str(camera + 1))
                   Camera_Version()
                   pygame.display.set_caption('Action ' + cameras[Pi_Cam] + ' : ' + str(camera + 1))
+                  picam2.stop_recording()
                   picam2.close()
                   picam2.stop()
                   start_camera()
