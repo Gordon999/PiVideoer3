@@ -18,7 +18,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE."""
 
 # Version
-version = "1.18"
+version = "1.19"
 
 import time
 import cv2
@@ -48,7 +48,8 @@ import ephem
 import datetime
 import subprocess
 
-# set Memory Store, 0 = RAM, 1 = SD CARD, 2 = USB drive
+# set Memory Store, 0 = RAM, 1 = SD CARD, 2 = USB drive, 3 = "/mnt/mydisk/"
+# if RAM set then you will loose all videos and jpegs on a power loss !!
 store = 1  
 
 # To save in a daily directory, eg ~/Video/250112/, set daily = True
@@ -62,25 +63,25 @@ somewhere.elevation = 100  # set your location height
 UTC_offset = 0             # set your local time offset to UTC
 
 # set video parameters
-vid_width    = 1280 
-vid_height   = 720 
-bitrate      = 2000000
-lores_width  = 640
-lores_height = 480
+vid_width    = 1920 
+vid_height   = 1080
+bitrate      = 4000000
+lores_width  = 1280
+lores_height = 720
 
 # set screen size
-scr_width    = 800
-scr_height   = 480
-
-# set preview size
-pre_width    = 640
-pre_height   = 480
+scr_width    = 1280
+scr_height   = 720
 
 # move MP4s and JPGs to USB on EXIT
 MP4stoUSB    = False
 
 # enable watchdog (will do a reboot)
 watch        = False
+
+# set preview size
+pre_width    = scr_width - int(scr_width/8)
+pre_height   = pre_width / (lores_width/lores_height)
 
 # find username
 h_user = "/home/" + os.getlogin( )
@@ -615,19 +616,6 @@ def Camera_Version():
       b = int(pre_height/2)
   swidth = swidths[Pi_Cam]
   sheight = sheights[Pi_Cam]
-  # set video size
-  if swidth < 1920:
-      vid_width  = swidth
-      vid_height = sheight
-      # set lores size
-      lores_width  = swidth
-      lores_height = sheight
-  else:
-      vid_width  = 1920
-      vid_height = 1080
-      # set lores size
-      lores_width  = 1280
-      lores_height = 960
 
   if Pi_Cam != -1:
       print("Camera:",cameras[Pi_Cam])
@@ -1083,7 +1071,7 @@ if watch == True:
 watch_timer = time.monotonic()
 watch_time  = 10
 menu_timer  = time.monotonic()
-menu_time   = 300
+menu_time   = 60
 
 while True:
     if trace == 1:
@@ -1314,6 +1302,11 @@ while True:
     image2 = pygame.surfarray.pixels3d(image)
     # CROP DETECTION AREA
     crop = image2[a-h_crop:a+h_crop,b-v_crop:b+v_crop]
+    if zoom > 0:
+        zc = [0,1,0.9,0.8,0.7,0.6,0.5,0.4,0.3,0.2,0.1]
+        za = int((pre_width/2) * (1 - (zoom/10)))
+        zb = int((pre_height/2) * (1 - (zoom/10)))
+        z_crop = image2[int(pre_width/2)-za:int(pre_width/2)+za,int(pre_height/2)-zb:int(pre_height/2)+zb]
     if trace > 1:
         print ("CROP ", crop.size)
     # COLOUR FILTER
@@ -1518,7 +1511,7 @@ while True:
               if zoom == 0:
                   cropped = pygame.transform.scale(image,(pre_width,pre_height))
               else:
-                  cropped = pygame.surfarray.make_surface(crop)
+                  cropped = pygame.surfarray.make_surface(z_crop)
                   cropped = pygame.transform.scale(cropped, (pre_width,pre_height))
               windowSurfaceObj.blit(cropped,(0, 0))
               # show colour filtering
@@ -2438,37 +2431,57 @@ while True:
                         text(0,4,3,1,1,str(threshold2),14,7)
                     save_config = 1
 
-                  elif g == 5 :
-                    # H CROP
-                    if (h == 1 and event.button == 1) or event.button == 4:
-                        h_crop +=1
-                        h_crop = min(h_crop,pre_width)
-                        if a-h_crop < 1 or b-v_crop < 1 or a+h_crop > cwidth or b+v_crop > int(cwidth/(pre_width/pre_height)):
-                            h_crop -=1
-                            new_crop = 0
-                            new_mask = 0
-                        text(0,5,3,1,1,str(h_crop),14,7)
-                    else:
-                        h_crop -=1
-                        h_crop = max(h_crop,1)
-                        text(0,5,3,1,1,str(h_crop),14,7)
-                    mask,change = MaskChange()
-                    save_config = 1
+                  elif g == 5:
+                      # H CROP
+                      if gv < bh/4:
+                          mp = 1 - hp
+                          h_crop = int((mp * (pre_width/2)) + 1)
+                          if a-h_crop < 1:
+                              h_crop = a 
+                              new_crop = 0
+                              new_mask = 0
+                          if a+h_crop > cwidth:
+                              h_crop = cwidth - a 
+                              new_crop = 0
+                              new_mask = 0
+                      elif (h == 1 and event.button == 1) or event.button == 4:
+                          h_crop +=1
+                          h_crop = min(h_crop,pre_width)
+                          if a-h_crop < 1 or b-v_crop < 1 or a+h_crop > cwidth or b+v_crop > int(cwidth/(pre_width/pre_height)):
+                              h_crop -=1
+                              new_crop = 0
+                              new_mask = 0
+                      else:
+                          h_crop -=1
+                          h_crop = max(h_crop,1)
+                      text(0,5,3,1,1,str(h_crop  * 2),14,7)
+                      mask,change = MaskChange()
+                      save_config = 1
                     
-                  elif g == 6 :
-                    # V CROP
-                    if (h == 1 and event.button == 1) or event.button == 4:
-                        v_crop +=1
-                        v_crop = min(v_crop,pre_height)
-                        if a-h_crop < 1 or b-v_crop < 1 or a+h_crop > cwidth or b+v_crop > int(cwidth/(pre_width/pre_height)):
-                            v_crop -=1
-                        text(0,6,3,1,1,str(v_crop),14,7)
-                    else:
-                        v_crop -=1
-                        v_crop = max(v_crop,1)
-                        text(0,6,3,1,1,str(v_crop),14,7)
-                    mask,change = MaskChange()
-                    save_config = 1                    
+                  elif g == 6:
+                      # V CROP
+                      if gv < bh/4:
+                          mp = 1 - hp
+                          v_crop = int((mp * (pre_width/2)) + 1)
+                          if b-v_crop < 1:
+                              v_crop = b 
+                              new_crop = 0
+                              new_mask = 0
+                          if b+v_crop > int(cwidth/(pre_width/pre_height)):
+                              v_crop = cheight - b 
+                              new_crop = 0
+                              new_mask = 0
+                      elif (h == 1 and event.button == 1) or event.button == 4:
+                          v_crop +=1
+                          v_crop = min(v_crop,pre_height)
+                          if a-h_crop < 1 or b-v_crop < 1 or a+h_crop > cwidth or b+v_crop > int(cwidth/(pre_width/pre_height)):
+                              v_crop -=1
+                      else:
+                          v_crop -=1
+                          v_crop = max(v_crop,1)
+                      text(0,6,3,1,1,str(v_crop * 2),14,7)
+                      mask,change = MaskChange()
+                      save_config = 1                   
 
                   elif g == 7 :
                     # COLOUR FILTER
@@ -3029,18 +3042,22 @@ while True:
                     save_config = 1
                     
                   elif g == 3 :
-                    # ZOOM
-                    zoom +=1
-                    if zoom == 1:
-                        button(0,3,1)
-                        text(0,3,1,0,1,"Zoom",14,0)
-                        if event.button == 3:
-                            preview = 1
-                    else:
-                        zoom = 0
-                        button(0,3,0)
-                        text(0,3,2,0,1,"Zoom",14,7)
-                        preview = 0
+                      # ZOOM
+                      if (h == 1 and event.button == 1) or event.button == 4:
+                          zoom +=1
+                          zoom = min(zoom,9)
+                      else:
+                          zoom -=1
+                          zoom = max(zoom,0)
+                      if zoom > 0:
+                          button(0,3,1)
+                          text(0,3,1,0,1,"Zoom",14,0)
+                          text(0,3,1,1,1,str(zoom),14,0)
+                      else:
+                          zoom = 0
+                          button(0,3,0)
+                          text(0,3,2,0,1,"Zoom",14,7)
+                          preview = 0
 
                   elif g == 4  and Pi == 5 and cam2 != "1":
                     # SWITCH CAMERA MODE
