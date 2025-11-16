@@ -41,7 +41,7 @@ Can be set to move all MP4s to usb at exit, assuming usb stick attached.
 
 Can control focus on a pi v3camera, auto, continuous,  manual or spot. For spot click on image when in menu showing focus options.
 
-MP4s and jpegs captured in /home/《user》/Videos. 
+MP4s and jpegs captured in /home/《user》/Videos/DATE 
 
 This is the optional buzzer it is setup for : Piezo Transducer - Mini 5V Buzzer (4000Hz) - The Pi Hut https://share.google/gzdvGth50wYb5F7w1
 
